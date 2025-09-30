@@ -2,15 +2,17 @@ package handler
 
 import (
 	"News-portal/internal/service"
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	service service.Service
+	service *service.Service
 }
 
-func New(service service.Service) *Handler {
+func New(service *service.Service) *Handler {
+	slog.Debug("handler initialization")
 	return &Handler{
 		service: service,
 	}

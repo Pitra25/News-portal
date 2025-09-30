@@ -1,7 +1,7 @@
-package methods
+package method
 
 import (
-	"News-portal/internal/db/models"
+	"News-portal/internal/db/model"
 	"database/sql"
 	"fmt"
 	"time"
@@ -21,7 +21,7 @@ func NewNewsPG(db *sqlx.DB) *NewsPG {
 
 var publishedAt = time.Now()
 
-func (m *NewsPG) GetAll() ([]models.News, error) {
+func (m *NewsPG) GetAll() ([]model.News, error) {
 	// query := fmt.Sprintf(
 	// 	"SELECT n.newsId, n.title, n.content, n.author, c.title, n.tagIds, n.publishedAt "+
 	// 		"FROM %s n"+
@@ -34,8 +34,8 @@ func (m *NewsPG) GetAll() ([]models.News, error) {
 	query := fmt.Sprintf(
 		"SELECT * FROM %s n "+
 			"WHERE statusId=%b AND publishedAt<=%s",
-		models.NewsTable,
-		models.NewsStatus, publishedAt,
+		model.NewsTable,
+		model.NewsStatus, publishedAt,
 	)
 
 	rows, err := m.db.Query(query)
@@ -43,9 +43,9 @@ func (m *NewsPG) GetAll() ([]models.News, error) {
 		return nil, err
 	}
 
-	var results []models.News
+	var results []model.News
 	for rows.Next() {
-		var news models.News
+		var news model.News
 
 		if err := rows.Scan(
 			&news.NewsID,
@@ -68,7 +68,7 @@ func (m *NewsPG) GetAll() ([]models.News, error) {
 	return results, nil
 }
 
-func (m *NewsPG) GetAllByQuery(categoryId, tagId, pageSize, page int) ([]models.News, error) {
+func (m *NewsPG) GetAllByQuery(categoryId, tagId, pageSize, page int) ([]model.News, error) {
 	var limit, offset = 0, 0
 
 	if page == 1 {
@@ -83,9 +83,8 @@ func (m *NewsPG) GetAllByQuery(categoryId, tagId, pageSize, page int) ([]models.
 			n.*, 
 			c.categoryId, 
 			s.statusId 
-		FROM ` + models.NewsTable + `n 
-		INNER JOIN` + models.CategoriesTable + `c ON c.categoryId = n.categoryId
-		INNER JOIN` + models.StatusesTable + ` s ON s.statusId = n.statusId
+		FROM ` + model.NewsTable + `n 
+		INNER JOIN` + model.CategoriesTable + `c ON c.categoryId = n.categoryId
 		WHERE n.statusId=$1 
 			AND n.publishedAt<=$2
 			AND n.categoryId = $3 
@@ -95,7 +94,7 @@ func (m *NewsPG) GetAllByQuery(categoryId, tagId, pageSize, page int) ([]models.
 
 	rows, err := m.db.Query(
 		query,
-		models.NewsStatus, //$1
+		model.NewsStatus, //$1
 		publishedAt,       //$2
 		categoryId,        //$3
 		tagId,             //$4
@@ -106,9 +105,9 @@ func (m *NewsPG) GetAllByQuery(categoryId, tagId, pageSize, page int) ([]models.
 		return nil, err
 	}
 
-	var results []models.News
+	var results []model.News
 	for rows.Next() {
-		var news models.News
+		var news model.News
 
 		if err := rows.Scan(
 			&news.NewsID,
@@ -155,13 +154,13 @@ func removeDuper(numbers []int) []int {
 	return result
 }
 
-func (m *NewsPG) GetById(id int) (models.News, error) {
+func (m *NewsPG) GetById(id int) (model.News, error) {
 	query := fmt.Sprintf(
 		"SELECT * FROM %s WHERE newsId=$1 AND statusId=%b AND publishedAt<=%s",
-		models.NewsTable, models.NewsStatus, publishedAt,
+		model.NewsTable, model.NewsStatus, publishedAt,
 	)
 
-	var news models.News
+	var news model.News
 	if err := m.db.QueryRow(query, id).Scan(
 		&news.NewsID,
 		&news.Title,
@@ -181,14 +180,14 @@ func (m *NewsPG) GetById(id int) (models.News, error) {
 	return news, nil
 }
 
-func (m *NewsPG) GetAllShortNews() ([]models.ShortNews, error) {
+func (m *NewsPG) GetAllShortNews() ([]model.ShortNews, error) {
 	query := fmt.Sprintf(
 		"SELECT newId, title, categoryId, tagIds, publishedAt "+
 			"FROM %s WHERE statusId=%b AND publishedAt<=%s",
-		models.NewsTable, models.NewsStatus, publishedAt,
+		model.NewsTable, model.NewsStatus, publishedAt,
 	)
 
-	var results []models.ShortNews
+	var results []model.ShortNews
 
 	rows, err := m.db.Query(query)
 	if err != nil {
@@ -196,7 +195,7 @@ func (m *NewsPG) GetAllShortNews() ([]models.ShortNews, error) {
 	}
 
 	for rows.Next() {
-		var news models.ShortNews
+		var news model.ShortNews
 
 		if err := rows.Scan(
 			&news.NewsID,
@@ -220,9 +219,9 @@ func (m *NewsPG) GetCountByCategoryAndTag(categoryId, tagId int) (int, error) {
 
 	var count int
 	if err := m.db.QueryRow(
-		"SELECT COUNT(*) FROM "+models.NewsTable+" "+
+		"SELECT COUNT(*) FROM "+model.NewsTable+" "+
 			"WHERE categoryId = $1 AND $2 = ANY(tagIds) AND statusId=$3 AND publishedAt<=%4",
-		categoryId, tagId, models.NewsStatus, publishedAt).Scan(&count); err != nil {
+		categoryId, tagId, model.NewsStatus, publishedAt).Scan(&count); err != nil {
 		return 0, err
 	}
 
@@ -233,9 +232,9 @@ func (m *NewsPG) GetCountByCategory(categoryId int) (int, error) {
 
 	var count int
 	if err := m.db.QueryRow(
-		"SELECT COUNT(*) FROM "+models.NewsTable+" "+
+		"SELECT COUNT(*) FROM "+model.NewsTable+" "+
 			"WHERE categoryId = $1 AND statusId=$3 AND publishedAt<=%4",
-		categoryId, models.NewsStatus, publishedAt).Scan(&count); err != nil {
+		categoryId, model.NewsStatus, publishedAt).Scan(&count); err != nil {
 		return 0, err
 	}
 
@@ -246,9 +245,9 @@ func (m *NewsPG) GetCountByTag(tagId int) (int, error) {
 
 	var count int
 	if err := m.db.QueryRow(
-		"SELECT COUNT(*) FROM "+models.NewsTable+" "+
+		"SELECT COUNT(*) FROM "+model.NewsTable+" "+
 			"WHERE $2 = ANY(tagIds) AND statusId=$3 AND publishedAt<=%4",
-		tagId, models.NewsStatus, publishedAt).Scan(&count); err != nil {
+		tagId, model.NewsStatus, publishedAt).Scan(&count); err != nil {
 		return 0, err
 	}
 
@@ -259,9 +258,9 @@ func (m *NewsPG) GetCount() (int, error) {
 
 	var count int
 	if err := m.db.QueryRow(
-		"SELECT COUNT(*) FROM "+models.NewsTable+" "+
+		"SELECT COUNT(*) FROM "+model.NewsTable+" "+
 			"WHERE AND statusId=$3 AND publishedAt<=%4",
-		models.NewsStatus, publishedAt).Scan(&count); err != nil {
+		model.NewsStatus, publishedAt).Scan(&count); err != nil {
 		return 0, err
 	}
 

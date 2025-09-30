@@ -2,38 +2,21 @@ package service
 
 import (
 	"News-portal/internal/db"
-	"News-portal/internal/db/models"
-	"News-portal/internal/service/methods"
+	"News-portal/internal/service/method"
+	"log/slog"
 )
 
-type News interface {
-	GetAll() ([]models.News, error)
-	GetAllByQuery(categoryId, tagId, pageSize, page int) ([]models.News, error)
-	GetById(id int) (models.News, error)
-	GetAllShortNews() ([]models.ShortNews, error)
-	GetCount(categoryId, tagId int) (int, error)
-}
-
-type Tags interface {
-	GetAll() ([]models.Tags, error)
-	GetById(id int) (models.Tags, error)
-}
-
-type Categories interface {
-	GetAll() ([]models.Categories, error)
-	GetById(id int) (models.Categories, error)
-}
-
 type Service struct {
-	News
-	Tags
-	Categories
+	News       *method.NewsService
+	Tags       *method.TagsService
+	Categories *method.CategoriesService
 }
 
-func New(db db.DB) *Service {
+func New(db *db.DB) *Service {
+	slog.Debug("service initialization")
 	return &Service{
-		News:       methods.NewNewsService(db.News),
-		Tags:       methods.NewTagsService(db.Tags),
-		Categories: methods.NewCategoriesService(db.Categories),
+		News:       method.NewNewsService(db),
+		Tags:       method.NewTagsService(db),
+		Categories: method.NewCategoriesService(db),
 	}
 }

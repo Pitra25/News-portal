@@ -1,7 +1,7 @@
-package methods
+package method
 
 import (
-	"News-portal/internal/db/models"
+	"News-portal/internal/db/model"
 	"database/sql"
 	"fmt"
 
@@ -18,13 +18,13 @@ func NewTagsPG(db *sqlx.DB) *TagsPG {
 	}
 }
 
-func (m *TagsPG) GetAll() ([]models.Tags, error) {
+func (m *TagsPG) GetAll() ([]model.Tags, error) {
 	query := fmt.Sprintf(
 		"SELECT * FROM %s",
-		models.TagsTable,
+		model.TagsTable,
 	)
 
-	var tags []models.Tags
+	var tags []model.Tags
 
 	rows, err := m.db.Query(query)
 	if err != nil {
@@ -32,7 +32,7 @@ func (m *TagsPG) GetAll() ([]models.Tags, error) {
 	}
 
 	for rows.Next() {
-		var tag models.Tags
+		var tag model.Tags
 
 		if err := rows.Scan(
 			&tag.TagID,
@@ -50,13 +50,13 @@ func (m *TagsPG) GetAll() ([]models.Tags, error) {
 	return tags, nil
 }
 
-func (m *TagsPG) GetById(id int) (models.Tags, error) {
+func (m *TagsPG) GetById(id int) (model.Tags, error) {
 	query := fmt.Sprintf(
 		"SELECT * FROM %s WHERE tagId=?",
-		models.TagsTable,
+		model.TagsTable,
 	)
 
-	var tag models.Tags
+	var tag model.Tags
 	if err := m.db.QueryRow(query, id).Scan(
 		&tag.TagID,
 		&tag.Title,

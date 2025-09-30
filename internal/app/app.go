@@ -1,61 +1,75 @@
 package app
 
 import (
-	"News-portal/internal/app/server"
+	config "News-portal/configs"
 	"News-portal/internal/db"
 	"News-portal/internal/handler"
 	"News-portal/internal/service"
-	"log"
+	"context"
+	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
-	"github.com/spf13/viper"
 )
 
-func Run() {
-	initConfig()
+type App struct {
+	cfg *config.Config
+	db  *sqlx.DB
+	srv *http.Server
+}
 
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("error loading env: ", err.Error())
+func New(cfg *config.Config) (*App, error) {
+	slog.Debug("db url: " + cfg.Database.DatabaseURL())
+
+	dbInit, err := db.NewPG(cfg.Database.DatabaseURL(), cfg)
+	if err != nil {
+		return nil, err
 	}
-
-	dbInit := initDB()
 
 	db := db.New(dbInit)
-	service := service.New(*db)
-	handler := handler.New(*service)
+	service := service.New(db)
+	handler := handler.New(service)
 
-	srv := startApp(handler)
-	stopApp(srv, dbInit)
+	srv := &http.Server{
+		Addr:         cfg.Server.ServerAddress(),
+		Handler:      handler.InitRoutes(),
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+	}
 
-	log.Print("Server stop")
+	return &App{
+		cfg: cfg,
+		db:  dbInit,
+		srv: srv,
+	}, nil
 }
 
-func startApp(h *handler.Handler) *server.Server {
-	srv := new(server.Server)
-
-	go func() {
-		srv.Start(viper.GetString("server.port"), h.InitRoutes())
-	}()
-
-	log.Print("App Started")
-
-	return srv
-}
-
-func stopApp(srv *server.Server, db *sqlx.DB) {
+func (a *App) Run() error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		if err := a.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("start server: " + err.Error())
+		}
+		slog.Info(a.cfg.Server.ServerAddress())
+	}()
+
 	<-quit
 
-	log.Print("App shutting down")
+	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.Server.ShutdownTimeout)
+	defer cancel()
 
-	srv.Stop()
-
-	if err := db.Close(); err != nil {
-		log.Fatal("An error occurred while closing the database connection: ", err.Error())
+	if err := a.srv.Shutdown(ctx); err != nil {
+		slog.Error("forced shutdown: " + err.Error())
 	}
+
+	if err := a.db.Close(); err != nil {
+		slog.Error("database connection close failed: " + err.Error())
+	}
+
+	return nil
 }
