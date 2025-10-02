@@ -1,4 +1,4 @@
-package model
+package rest
 
 import "time"
 
@@ -17,14 +17,13 @@ type (
 		CategoryID int    `json:"categoryId"`
 		Title      string `json:"title"`
 	}
-
 	News struct {
 		NewsID      int       `json:"newsId"`
 		Title       string    `json:"title"`
 		Content     string    `json:"content"`
 		Author      string    `json:"author"`
-		CategoryID  Category  `json:"categoryId"`
-		TagIds      []Tag     `json:"tagIds"`
+		Category    Category  `json:"category"`
+		Tags        []Tag     `json:"tagIds"`
 		PublishedAt time.Time `json:"publishedAt"`
 	}
 
@@ -32,7 +31,7 @@ type (
 		NewsID      int       `json:"newsId"`
 		Title       string    `json:"title"`
 		PublishedAt time.Time `json:"publishedAt"`
-		CategoryID  Category  `json:"categoryId"`
+		Category    Category  `json:"category"`
 		TagIds      []Tag     `json:"tagIds"`
 	}
 

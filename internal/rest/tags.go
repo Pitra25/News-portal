@@ -1,4 +1,4 @@
-package handler
+package rest
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) GetAllCategories(c *gin.Context) {
-	categories, err := h.service.Categories.GetAll()
+func (h *Handler) GetAllTags(c *gin.Context) {
+	tags, err := h.service.Tags.GetAll()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -17,20 +17,20 @@ func (h *Handler) GetAllCategories(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		gin.H{
-			"data": categories,
+			"data": tags,
 		},
 	)
 }
 
-func (h *Handler) GetCategoryById(c *gin.Context) {
-	idStr := c.Query("id")
+func (h *Handler) GetTagById(c *gin.Context) {
+	idStr, _ := c.Params.Get("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	category, err := h.service.Categories.GetById(id)
+	tags, err := h.service.Tags.GetById(id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -39,7 +39,7 @@ func (h *Handler) GetCategoryById(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		gin.H{
-			"data": category,
+			"data": tags,
 		},
 	)
 }

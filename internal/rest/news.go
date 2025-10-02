@@ -1,15 +1,30 @@
-package handler
+package rest
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) GetAllNews(c *gin.Context) {
+type queryParams struct {
+	CategoryId int `form:"categoryId"`
+	TagId      int `form:"tagId"`
+	PageSize   int `form:"pageSize"`
+	Page       int `form:"page"`
+}
 
-	news, err := h.service.News.GetAll()
+func (h *Handler) GetAllNews(c *gin.Context) {
+	var params queryParams
+	if err := c.ShouldBindQuery(&params); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	slog.Info("parm", "CategoryId", params.CategoryId, "TagId", params.TagId, "PageSize", params.PageSize, "Page", params.Page)
+
+	news, err := h.service.News.GetAllByQuery(params.CategoryId, params.TagId, params.PageSize, params.Page)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -24,16 +39,16 @@ func (h *Handler) GetAllNews(c *gin.Context) {
 }
 
 func (h *Handler) GetAllNewsByQuery(c *gin.Context) {
-	categoryIdStr := c.Query("categoryId")
+	categoryIdStr := c.Query("CategoryId")
 	categoryId, _ := strconv.Atoi(categoryIdStr)
 
-	tagIdStr := c.Query("tagId")
+	tagIdStr := c.Query("TagId")
 	tagId, _ := strconv.Atoi(tagIdStr)
 
-	pageSizeStr := c.Query("pageSize")
+	pageSizeStr := c.Query("PageSize")
 	pageSize, _ := strconv.Atoi(pageSizeStr)
 
-	pageStr := c.Query("page")
+	pageStr := c.Query("Page")
 	page, _ := strconv.Atoi(pageStr)
 
 	if categoryId == 0 || tagId == 0 ||
@@ -57,7 +72,7 @@ func (h *Handler) GetAllNewsByQuery(c *gin.Context) {
 }
 
 func (h *Handler) GetNewsById(c *gin.Context) {
-	newsIdStr := c.Query("newsId")
+	newsIdStr, _ := c.Params.Get("id")
 
 	newsId, err := strconv.Atoi(newsIdStr)
 	if err != nil {
@@ -95,11 +110,16 @@ func (h *Handler) GetAllShortNews(c *gin.Context) {
 }
 
 func (h *Handler) GetNewsCount(c *gin.Context) {
-	categoryIdStr := c.Query("categoryId")
+	categoryIdStr := c.Query("CategoryId")
 	categoryId, _ := strconv.Atoi(categoryIdStr)
 
-	tagIdStr := c.Query("tagId")
+	tagIdStr := c.Query("TagId")
 	tagId, _ := strconv.Atoi(tagIdStr)
+
+	if categoryId == 0 || tagId == 0 {
+		newErrorResponse(c, http.StatusInternalServerError, "parameters were passed incorrectly")
+		return
+	}
 
 	count, err := h.service.News.GetCount(categoryId, tagId)
 	if err != nil {

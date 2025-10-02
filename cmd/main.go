@@ -1,7 +1,6 @@
 package main
 
 import (
-	config "News-portal/configs"
 	"News-portal/internal/app"
 	"log/slog"
 	"os"
@@ -14,26 +13,24 @@ func main() {
 	slog.SetDefault(logger)
 
 	if err := godotenv.Load(); err != nil {
-		slog.Error("loading env: " + err.Error())
+		slog.Error("fail loading env", "err", err)
 		return
 	}
 
-	cfg, err := config.Load("./configs/config.toml")
+	cfg, err := app.Load("./config/config.toml")
 	if err != nil {
-		slog.Error("load config: " + err.Error())
+		slog.Error("fail load config", "err", err)
 		return
 	}
-
-	slog.Info("cfg: ", cfg)
 
 	application, err := app.New(cfg)
 	if err != nil {
-		slog.Error("init application: " + err.Error())
+		slog.Error("fail init app", "err", err)
 		return
 	}
 
 	if err := application.Run(); err != nil {
-		slog.Error("run application: " + err.Error())
+		slog.Error("fail run app", "err", err)
 		return
 	}
 }

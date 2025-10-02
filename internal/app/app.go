@@ -1,11 +1,11 @@
 package app
 
 import (
-	config "News-portal/configs"
 	"News-portal/internal/db"
-	"News-portal/internal/handler"
-	"News-portal/internal/service"
+	"News-portal/internal/newsportal"
+	"News-portal/internal/rest"
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,26 +16,30 @@ import (
 )
 
 type App struct {
-	cfg *config.Config
+	cfg *config
 	db  *sqlx.DB
 	srv *http.Server
 }
 
-func New(cfg *config.Config) (*App, error) {
-	slog.Debug("db url: " + cfg.Database.DatabaseURL())
+func New(cfg *config) (*App, error) {
 
-	dbInit, err := db.NewPG(cfg.Database.DatabaseURL(), cfg)
+	dbInit, err := db.NewPG(
+		cfg.Database.DatabaseURL(),
+		cfg.Database.MaxIdleCons,
+		cfg.Database.MaxIdleCons,
+		cfg.Database.ConnMaxLifetime,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	db := db.New(dbInit)
-	service := service.New(db)
-	handler := handler.New(service)
+	service := newsportal.New(db)
+	rest := rest.New(service)
 
 	srv := &http.Server{
 		Addr:         cfg.Server.ServerAddress(),
-		Handler:      handler.InitRoutes(),
+		Handler:      rest.InitRoutes(),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
@@ -52,10 +56,10 @@ func (a *App) Run() error {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-		if err := a.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("start server: " + err.Error())
+		if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("fail start server", "err", err.Error())
 		}
-		slog.Info(a.cfg.Server.ServerAddress())
+		slog.Info("Address server", "url", "http://"+a.cfg.Server.ServerAddress())
 	}()
 
 	<-quit
@@ -64,11 +68,11 @@ func (a *App) Run() error {
 	defer cancel()
 
 	if err := a.srv.Shutdown(ctx); err != nil {
-		slog.Error("forced shutdown: " + err.Error())
+		slog.Error("forced shutdown", "err", err.Error())
 	}
 
 	if err := a.db.Close(); err != nil {
-		slog.Error("database connection close failed: " + err.Error())
+		slog.Error("database connection close failed", "err", err.Error())
 	}
 
 	return nil
