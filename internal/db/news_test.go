@@ -8,22 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// не работает, пока что
-func TestNewsPG_GetAll(t *testing.T) {
-	conn, err := getConnection()
-	assert.NoError(t, err)
-
-	m := &NewsPG{
-		db: conn,
-	}
-	// TODO изменить sql запрос
-	lists, err := m.GetAll()
-	assert.NoError(t, err)
-
-	const minLength = 10
-	assert.GreaterOrEqual(t, len(lists), minLength, fmt.Sprint("len: ", len(lists)))
-}
-
 func TestNewsPG_GetAllByQuery(t *testing.T) {
 	conn, err := getConnection()
 	assert.NoError(t, err)
@@ -32,11 +16,10 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 		conn *sqlx.DB
 	}
 	type args struct {
-		categoryId int
-		tagId      int
-		pageSize   int
-		page       int
+		newsFilters FiltersNews
+		pageFilters PageFilters
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -50,10 +33,14 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 				conn,
 			},
 			args: args{
-				categoryId: 2,
-				tagId:      1,
-				pageSize:   10,
-				page:       1,
+				FiltersNews{
+					CategoryId: 2,
+					TagId:      1,
+				},
+				PageFilters{
+					PageSize: 10,
+					Page:     1,
+				},
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -64,12 +51,16 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 				conn,
 			},
 			args: args{
-				categoryId: 4,
-				tagId:      1,
-				pageSize:   10,
-				page:       1,
+				FiltersNews{
+					CategoryId: 4,
+					TagId:      1,
+				},
+				PageFilters{
+					PageSize: 10,
+					Page:     1,
+				},
 			},
-			want:    1,
+			want:    2,
 			wantErr: assert.NoError,
 		},
 		{
@@ -78,12 +69,16 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 				conn,
 			},
 			args: args{
-				categoryId: 5,
-				tagId:      1,
-				pageSize:   10,
-				page:       1,
+				FiltersNews{
+					CategoryId: 5,
+					TagId:      1,
+				},
+				PageFilters{
+					PageSize: 10,
+					Page:     1,
+				},
 			},
-			want:    1,
+			want:    0,
 			wantErr: assert.NoError,
 		},
 		{
@@ -92,10 +87,14 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 				conn,
 			},
 			args: args{
-				categoryId: 10,
-				tagId:      1,
-				pageSize:   10,
-				page:       1,
+				FiltersNews{
+					CategoryId: 10,
+					TagId:      1,
+				},
+				PageFilters{
+					PageSize: 10,
+					Page:     1,
+				},
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -104,11 +103,11 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &NewsPG{
+			m := &NewsRepo{
 				db: conn,
 			}
-			list, err := m.GetAllByQuery(2, 1, 10, 1)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetAllByQuery() error = %e, wantErr %v", err, tt.wantErr)) {
+			list, err := m.GetByFilters(tt.args.newsFilters, tt.args.pageFilters)
+			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
 
@@ -124,13 +123,10 @@ func TestNewsPG_GetById(t *testing.T) {
 	type fields struct {
 		conn *sqlx.DB
 	}
-	type args struct {
-		newsId int
-	}
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
+		args    int
 		want    string
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -139,9 +135,7 @@ func TestNewsPG_GetById(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				newsId: 1,
-			},
+			args:    1,
 			want:    "Иван Петров",
 			wantErr: assert.NoError,
 		},
@@ -150,9 +144,7 @@ func TestNewsPG_GetById(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				newsId: 11,
-			},
+			args:    11,
 			want:    "Анна Петрова",
 			wantErr: assert.NoError,
 		},
@@ -161,9 +153,7 @@ func TestNewsPG_GetById(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				newsId: 12,
-			},
+			args:    12,
 			want:    "Михаил Семенов",
 			wantErr: assert.NoError,
 		},
@@ -172,11 +162,11 @@ func TestNewsPG_GetById(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			m := &NewsPG{
+			m := &NewsRepo{
 				db: conn,
 			}
-			news, err := m.GetById(tt.args.newsId)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetAllByQuery() error = %e, wantErr %v", err, tt.wantErr)) {
+			news, err := m.GetById(tt.args)
+			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
 
@@ -184,20 +174,6 @@ func TestNewsPG_GetById(t *testing.T) {
 			assert.Equal(t, news.Author, tt.want, fmt.Sprint("Author: ", news.Author))
 		})
 	}
-}
-
-func TestNewsPG_GetAllShortNews(t *testing.T) {
-	conn, err := getConnection()
-	assert.NoError(t, err)
-
-	m := &NewsPG{
-		db: conn,
-	}
-	lists, err := m.GetAllShortNews()
-	assert.NoError(t, err)
-
-	const minLength = 5
-	assert.GreaterOrEqual(t, len(lists), minLength, fmt.Sprint("len: ", len(lists)))
 }
 
 func TestNewsPG_GetCount(t *testing.T) {
@@ -215,7 +191,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
+		args    FiltersNews
 		want    int
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -224,9 +200,9 @@ func TestNewsPG_GetCount(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				categoryId: 1,
-				tagId:      0,
+			args: FiltersNews{
+				CategoryId: 1,
+				TagId:      0,
 			},
 			want:    0,
 			wantErr: assert.NoError,
@@ -236,9 +212,9 @@ func TestNewsPG_GetCount(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				categoryId: 2,
-				tagId:      0,
+			args: FiltersNews{
+				CategoryId: 2,
+				TagId:      0,
 			},
 			want:    2,
 			wantErr: assert.NoError,
@@ -248,9 +224,9 @@ func TestNewsPG_GetCount(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				categoryId: 1,
-				tagId:      1,
+			args: FiltersNews{
+				CategoryId: 1,
+				TagId:      1,
 			},
 			want:    0,
 			wantErr: assert.NoError,
@@ -260,9 +236,9 @@ func TestNewsPG_GetCount(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				categoryId: 2,
-				tagId:      1,
+			args: FiltersNews{
+				CategoryId: 2,
+				TagId:      1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -272,9 +248,9 @@ func TestNewsPG_GetCount(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				categoryId: 2,
-				tagId:      2,
+			args: FiltersNews{
+				CategoryId: 2,
+				TagId:      2,
 			},
 			want:    2,
 			wantErr: assert.NoError,
@@ -284,9 +260,9 @@ func TestNewsPG_GetCount(t *testing.T) {
 			fields: fields{
 				conn,
 			},
-			args: args{
-				categoryId: 7,
-				tagId:      1,
+			args: FiltersNews{
+				CategoryId: 7,
+				TagId:      1,
 			},
 			want:    3,
 			wantErr: assert.NoError,
@@ -295,12 +271,13 @@ func TestNewsPG_GetCount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			m := &NewsPG{
+			m := &NewsRepo{
 				db: tt.fields.db,
 			}
 
-			count, err := m.GetCount(tt.args.categoryId, tt.args.tagId)
+			count, err := m.GetCount(tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetCount() error = %e, wantErr %v", err, tt.wantErr)) {
+
 				return
 			}
 

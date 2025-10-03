@@ -11,7 +11,7 @@ type Service struct {
 	Categories *CategoriesService
 }
 
-func New(db *db.DB) *Service {
+func NewRepo(db *db.DB) *Service {
 	slog.Debug("newsportal initialization")
 	return &Service{
 		News:       NewNewsService(db),

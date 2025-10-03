@@ -15,8 +15,18 @@ const (
 	newsStatus = 1
 )
 
-// Table DB
 type (
+	FiltersNews struct {
+		NewsId     int
+		CategoryId int
+		TagId      int
+	}
+
+	PageFilters struct {
+		PageSize int
+		Page     int
+	}
+
 	News struct {
 		NewsID      int           `db:"newsId"`
 		Title       string        `db:"title"`
@@ -27,14 +37,6 @@ type (
 		CreatedAt   time.Time     `db:"createdAt,readonly"`
 		PublishedAt time.Time     `db:"publishedAt"`
 		StatusID    int           `db:"statusId"`
-	}
-
-	ShortNews struct {
-		NewsID      int           `db:"newsId"`
-		Title       string        `db:"title"`
-		PublishedAt time.Time     `db:"publishedAt"`
-		CategoryID  int           `db:"categoryId"`
-		TagIds      pq.Int64Array `db:"tagIds"`
 	}
 
 	Categories struct {
@@ -49,9 +51,39 @@ type (
 		Title    string `db:"title"`
 		StatusID int    `db:"statusId"`
 	}
-
-	statuses struct {
-		StatusID int    `db:"statusId"`
-		Title    string `db:"title"`
-	}
 )
+
+func (fil *FiltersNews) NewFilters() string {
+	result := ` "statusId" = :statusID AND "publishedAt" <= now()`
+	if fil.CategoryId != 0 {
+		result = result + ` AND "categoryId" = :categoryID`
+	}
+	if fil.TagId != 0 {
+		result = result + ` AND :tagID = ANY("tagIds")`
+	}
+	return result
+}
+
+func (fil *FiltersNews) NewNewsFilters() string {
+	result := ` n."statusId" = :statusID AND n."publishedAt" <= now()`
+	if fil.CategoryId != 0 {
+		result = result + ` AND n."categoryId" = :categoryID`
+	}
+	if fil.TagId != 0 {
+		result = result + ` AND :tagID = ANY(n."tagIds")`
+	}
+	return result
+}
+
+func removeDuper(numbers pq.Int64Array) pq.Int64Array {
+	seen := make(map[int64]bool)
+	result := make([]int64, 0)
+
+	for _, v := range numbers {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+	return result
+}

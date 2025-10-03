@@ -8,9 +8,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -21,20 +18,10 @@ type App struct {
 	srv *http.Server
 }
 
-func New(cfg *config) (*App, error) {
+func New(cfg *config, dbInit *sqlx.DB) *App {
 
-	dbInit, err := db.NewPG(
-		cfg.Database.DatabaseURL(),
-		cfg.Database.MaxIdleCons,
-		cfg.Database.MaxIdleCons,
-		cfg.Database.ConnMaxLifetime,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	db := db.New(dbInit)
-	service := newsportal.New(db)
+	conn := db.Init(dbInit)
+	service := newsportal.NewRepo(conn)
 	rest := rest.New(service)
 
 	srv := &http.Server{
@@ -48,22 +35,20 @@ func New(cfg *config) (*App, error) {
 		cfg: cfg,
 		db:  dbInit,
 		srv: srv,
-	}, nil
+	}
 }
 
 func (a *App) Run() error {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
-	go func() {
-		if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("fail start server", "err", err.Error())
-		}
-		slog.Info("Address server", "url", "http://"+a.cfg.Server.ServerAddress())
-	}()
+	if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		slog.Error("fail start server", "err", err.Error())
+	}
+	slog.Info("Address server", "url", "http://"+a.cfg.Server.ServerAddress())
 
-	<-quit
+	return nil
+}
 
+func (a *App) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.Server.ShutdownTimeout)
 	defer cancel()
 
@@ -74,6 +59,5 @@ func (a *App) Run() error {
 	if err := a.db.Close(); err != nil {
 		slog.Error("database connection close failed", "err", err.Error())
 	}
-
 	return nil
 }

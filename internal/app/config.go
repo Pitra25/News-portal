@@ -10,26 +10,26 @@ import (
 )
 
 type config struct {
-	Server   serverConfig   `toml:"server"`
-	Database databaseConfig `toml:"database"`
+	Server   serverConfig
+	Database databaseConfig
 }
 
 type serverConfig struct {
-	Host            string        `toml:"host"`
-	Port            string        `toml:"port"`
-	ReadTimeout     time.Duration `toml:"read_timeout"`
-	WriteTimeout    time.Duration `toml:"write_timeout"`
-	ShutdownTimeout time.Duration `toml:"shutdown_timeout"`
+	Host            string
+	Port            string
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	ShutdownTimeout time.Duration
 }
 
 type databaseConfig struct {
-	Host            string        `toml:"host"`
-	Port            string        `toml:"port"`
-	DBName          string        `toml:"dbName"`
-	SSLMode         string        `toml:"sslMode"`
-	MaxOpenCons     int           `toml:"max_open_cons"`
-	MaxIdleCons     int           `toml:"max_idle_cons"`
-	ConnMaxLifetime time.Duration `toml:"conn_max_lifetime"`
+	Host            string
+	Port            string
+	DBName          string
+	SSLMode         string
+	MaxOpenCons     int
+	MaxIdleCons     int
+	ConnMaxLifetime time.Duration
 }
 
 func Load(path string) (*config, error) {

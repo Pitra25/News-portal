@@ -25,7 +25,7 @@ var dsn = fmt.Sprintf(
 )
 
 func getConnection() (*sqlx.DB, error) {
-	conn, err := NewPG(dsn, 5, 15, 5)
+	conn, err := Connection(dsn, 5, 15, 5)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func TestNewPG(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pq, err := NewPG(tt.args.dsn, tt.args.maxOpenCons, tt.args.maxIdleCons, tt.args.connMaxLifetime)
+			pq, err := Connection(tt.args.dsn, tt.args.maxOpenCons, tt.args.maxIdleCons, tt.args.connMaxLifetime)
 			if !tt.wantErr(t, err, fmt.Sprint("error", err)) {
 				return
 			}

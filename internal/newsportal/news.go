@@ -46,7 +46,7 @@ func (s *NewsService) GetAll() ([]News, error) {
 func (s *NewsService) GetAllByQuery(categoryId, tagId, pageSize, page int) ([]News, error) {
 	respNews := []News{}
 
-	news, err := s.db.News.GetAllByQuery(categoryId, tagId, pageSize, page)
+	news, err := s.db.News.GetByFilters(categoryId, tagId, pageSize, page)
 	if err != nil {
 		return respNews, err
 	}

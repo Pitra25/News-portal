@@ -36,10 +36,4 @@ type (
 		Category    Category
 		TagIds      []Tag
 	}
-
-	Categories struct {
-		CategoryID  int
-		Title       string
-		OrderNumber int
-	}
 )

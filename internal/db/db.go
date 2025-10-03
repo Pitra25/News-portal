@@ -9,12 +9,12 @@ import (
 )
 
 type DB struct {
-	News       *NewsPG
-	Tags       *TagsPG
-	Categories *CategoriesPG
+	News       *NewsRepo
+	Tags       *TagRepo
+	Categories *CategoryRepo
 }
 
-func New(db *sqlx.DB) *DB {
+func Init(db *sqlx.DB) *DB {
 	return &DB{
 		News:       NewNewsPG(db),
 		Tags:       NewTagsPG(db),
@@ -22,7 +22,7 @@ func New(db *sqlx.DB) *DB {
 	}
 }
 
-func NewPG(
+func Connection(
 	dsn string,
 	maxOpenCons, maxIdleCons int,
 	connMaxLifetime time.Duration,
