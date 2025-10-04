@@ -12,7 +12,7 @@ const (
 	tagsTable       = "newsportal.tags"
 	categoriesTable = "newsportal.categories"
 
-	newsStatus = 1
+	newsStatus = 1 // published
 )
 
 type (

@@ -9,10 +9,17 @@ func NewCategory(c db.Categories) Category {
 	}
 }
 
+func NewTag(tagDB db.Tags) Tag {
+	return Tag{
+		TagID: tagDB.TagID,
+		Title: tagDB.Title,
+	}
+}
+
 func NewNews(
 	newsDB db.News,
-	tags []Tag,
 	categoryDB Category,
+	tags []Tag,
 ) News {
 	return News{
 		NewsID:  newsDB.NewsID,
@@ -26,13 +33,6 @@ func NewNews(
 		Tags:        tags,
 		TagIds:      newsDB.TagIds,
 		PublishedAt: newsDB.PublishedAt,
-	}
-}
-
-func NewTag(tagDB db.Tags) Tag {
-	return Tag{
-		TagID: tagDB.TagID,
-		Title: tagDB.Title,
 	}
 }
 

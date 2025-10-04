@@ -11,7 +11,7 @@ type TagRepo struct {
 	db *sqlx.DB
 }
 
-func TagsInit(db *sqlx.DB) *TagRepo {
+func NewTags(db *sqlx.DB) *TagRepo {
 	return &TagRepo{
 		db: db,
 	}

@@ -12,7 +12,7 @@ type NewsRepo struct {
 	db *sqlx.DB
 }
 
-func NewsInit(db *sqlx.DB) *NewsRepo {
+func NewNews(db *sqlx.DB) *NewsRepo {
 	return &NewsRepo{
 		db: db,
 	}
@@ -21,10 +21,6 @@ func NewsInit(db *sqlx.DB) *NewsRepo {
 func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
 	// formation of restrictions
 	var limit, offset = fil.Page.paginator()
-
-	// forming a request and parameters
-	//query := `SELECT n.*, n."statusId", c."categoryId" FROM newsportal.news n INNER JOIN newsportal.categories c ON c."categoryId" = n."categoryId"
-	//		WHERE` + filter.Filters() + ` LIMIT :limit OFFSET :offset`
 
 	query := `SELECT n.*, c."categoryId" FROM ` + newsTable + ` n INNER JOIN ` + categoriesTable + ` c ON c."categoryId" = n."categoryId"
 		WHERE ` + fil.News.NewFilters() + ` ORDER BY n."publishedAt" DESC LIMIT :limit OFFSET :offset`

@@ -13,12 +13,12 @@ import (
 )
 
 type App struct {
-	cfg *config
+	cfg *Config
 	db  *sqlx.DB
 	srv *http.Server
 }
 
-func New(cfg *config, dbInit *sqlx.DB) *App {
+func New(cfg *Config, dbInit *sqlx.DB) *App {
 
 	conn := db.Init(dbInit)
 	manager := newsportal.NewManager(conn)
@@ -43,7 +43,6 @@ func (a *App) Run() error {
 	if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("fail start server", "err", err.Error())
 	}
-	slog.Info("Address server", "url", "http://"+a.cfg.Server.ServerAddress())
 
 	return nil
 }

@@ -11,16 +11,16 @@ type CategoryRepo struct {
 	db *sqlx.DB
 }
 
-func CategoryInit(db *sqlx.DB) *CategoryRepo {
+func NewCategory(db *sqlx.DB) *CategoryRepo {
 	return &CategoryRepo{
 		db: db,
 	}
 }
 
-func (m *CategoryRepo) GetAll() ([]Categories, error) {
+func (m *CategoryRepo) GetAll(fil Filters) ([]Categories, error) {
 	var arrCategories []Categories
 
-	query := fmt.Sprint("SELECT * FROM ", categoriesTable)
+	query := "SELECT * FROM " + categoriesTable + fil.News.NewFilters()
 
 	if err := m.db.Select(&arrCategories, query); err != nil {
 		return arrCategories, err

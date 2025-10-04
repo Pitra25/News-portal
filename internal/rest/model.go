@@ -3,6 +3,8 @@ package rest
 import (
 	"News-portal/internal/newsportal"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type (
@@ -40,6 +42,10 @@ type (
 		Category    Category  `json:"category"`
 		TagIds      []Tag     `json:"tagIds"`
 	}
+
+	errorResponse struct {
+		Message string `json:"message"`
+	}
 )
 
 func (q *queryParams) NewFilter() newsportal.Filters {
@@ -48,4 +54,8 @@ func (q *queryParams) NewFilter() newsportal.Filters {
 		q.PageSize, q.Page,
 	)
 	return filter
+}
+
+func newErrorResponse(c *gin.Context, statusCode int, message string) {
+	c.AbortWithStatusJSON(statusCode, errorResponse{message})
 }

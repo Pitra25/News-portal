@@ -15,9 +15,9 @@ type DB struct {
 
 func Init(db *sqlx.DB) *DB {
 	return &DB{
-		News:       NewsInit(db),
-		Tags:       TagsInit(db),
-		Categories: CategoryInit(db),
+		News:       NewNews(db),
+		Tags:       NewTags(db),
+		Categories: NewCategory(db),
 	}
 }
 

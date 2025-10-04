@@ -77,13 +77,17 @@ func NewFilters(
 
 func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map[int][]int64, error) {
 
-	tag := []Tag{}
-	categories := []db.Categories{}
+	var (
+		tag        []Tag
+		categories []db.Categories
+	)
 
-	// Собираем ID для запросов
-	tagIds := map[int][]int64{}
-	tagIdsArr := []int{}
-	categoryIdArr := []int{}
+	// Collecting IDs for requests
+	var (
+		tagIdsArr     []int
+		categoryIdArr []int
+		tagIds        map[int][]int64
+	)
 
 	for _, v := range data {
 		tagIds[v.NewsID] = v.TagIds
@@ -91,18 +95,18 @@ func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map
 		categoryIdArr = append(categoryIdArr, v.CategoryID)
 	}
 
-	// Получаем теги
+	// Getting the tags
 	tagData, err := m.db.Tags.GetByID(tagIdsArr)
 	if err != nil {
 		return tag, categories, tagIds, err
 	}
 
-	// Преобразуем теги
+	// Converting tags
 	for _, v := range tagData {
 		tag = append(tag, NewTag(v))
 	}
 
-	// Получаем категории
+	// We get the categories
 	categories, err = m.db.Categories.GetById(categoryIdArr)
 	if err != nil {
 		return tag, categories, tagIds, err
@@ -112,19 +116,20 @@ func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map
 }
 
 func GetNewsMetadata(tagsArr []Tag, categoryArr []db.Categories, v db.News) ([]Tag, Category) {
-	// найти объект с нужными тегами
-	tags := []Tag{}
+	// find an object with the necessary tags
+	var tags []Tag
 	for _, tag := range tagsArr {
 		if tag.TagID == int(v.TagIds[0]) {
 			tags = append(tags, tag)
 		}
 	}
 
-	// найти объект с нужной категорией
-	category := Category{}
+	// find an object with the desired category
+	var category Category
 	for _, cat := range categoryArr {
 		if cat.CategoryID == v.CategoryID {
 			category = NewCategory(cat)
+			break
 		}
 	}
 

@@ -9,12 +9,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-type config struct {
-	Server   serverConfig
-	Database databaseConfig
+type Config struct {
+	Server   ServerConfig
+	Database DatabaseConfig
 }
 
-type serverConfig struct {
+type ServerConfig struct {
 	Host            string
 	Port            string
 	ReadTimeout     time.Duration
@@ -22,7 +22,7 @@ type serverConfig struct {
 	ShutdownTimeout time.Duration
 }
 
-type databaseConfig struct {
+type DatabaseConfig struct {
 	Host            string
 	Port            string
 	DBName          string
@@ -32,17 +32,17 @@ type databaseConfig struct {
 	ConnMaxLifetime time.Duration
 }
 
-func Load(path string) (*config, error) {
-	var conf config
+func Load(path string) (*Config, error) {
+	var conf Config
 
 	if _, err := toml.DecodeFile(path, &conf); err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
+		return nil, fmt.Errorf("failed to load Config: %w", err)
 	}
 
 	return &conf, nil
 }
 
-func (d *databaseConfig) DatabaseURL() string {
+func (d *DatabaseConfig) DatabaseURL() string {
 	if d.Host == "" || d.Port == "" || d.DBName == "" {
 		slog.Error("missing required database configuration",
 			"host", d.Host,
@@ -59,6 +59,6 @@ func (d *databaseConfig) DatabaseURL() string {
 	)
 }
 
-func (s *serverConfig) ServerAddress() string {
-	return fmt.Sprintf("%s:%s", s.Host, s.Port)
+func (s *ServerConfig) ServerAddress() string {
+	return fmt.Sprintf("http://%s:%s/api", s.Host, s.Port)
 }
