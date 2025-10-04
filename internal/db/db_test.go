@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"testing"
 	"time"
 
@@ -19,26 +21,37 @@ const (
 	sslmode  = "disable"
 )
 
+var connDB *sqlx.DB
+
 var dsn = fmt.Sprintf(
 	"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 	host, port, user, password, dbname, sslmode,
 )
 
-func getConnection() (*sqlx.DB, error) {
-	conn, err := Connection(dsn, 5, 15, 5)
+func TestMain(m *testing.M) {
+	conn, err := Connect(dsn, 5, 15, 5)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return conn, nil
+	connDB = conn
+
+	exitCode := m.Run()
+	err = connDB.Close()
+	if err != nil {
+		slog.Error("Error closing DB connection.", "err", err)
+		return
+	}
+	os.Exit(exitCode)
 }
 
-func TestNewPG(t *testing.T) {
+func TestConnect(t *testing.T) {
 	type args struct {
 		dsn             string
 		maxOpenCons     int
 		maxIdleCons     int
 		connMaxLifetime time.Duration
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -59,7 +72,7 @@ func TestNewPG(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pq, err := Connection(tt.args.dsn, tt.args.maxOpenCons, tt.args.maxIdleCons, tt.args.connMaxLifetime)
+			pq, err := Connect(tt.args.dsn, tt.args.maxOpenCons, tt.args.maxIdleCons, tt.args.connMaxLifetime)
 			if !tt.wantErr(t, err, fmt.Sprint("error", err)) {
 				return
 			}

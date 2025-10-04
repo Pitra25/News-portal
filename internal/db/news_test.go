@@ -9,31 +9,20 @@ import (
 )
 
 func TestNewsPG_GetAllByQuery(t *testing.T) {
-	conn, err := getConnection()
-	assert.NoError(t, err)
-
 	type fields struct {
 		conn *sqlx.DB
-	}
-	type args struct {
-		newsFilters FiltersNews
-		pageFilters PageFilters
 	}
 
 	tests := []struct {
 		name    string
-		fields  fields
-		args    args
+		args    Filters
 		want    int
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Get all news by query (1)",
-			fields: fields{
-				conn,
-			},
-			args: args{
-				FiltersNews{
+			args: Filters{
+				NewsFilters{
 					CategoryId: 2,
 					TagId:      1,
 				},
@@ -47,11 +36,8 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 		},
 		{
 			name: "Get all news by query (2)",
-			fields: fields{
-				conn,
-			},
-			args: args{
-				FiltersNews{
+			args: Filters{
+				NewsFilters{
 					CategoryId: 4,
 					TagId:      1,
 				},
@@ -65,11 +51,8 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 		},
 		{
 			name: "Get all news by query (3)",
-			fields: fields{
-				conn,
-			},
-			args: args{
-				FiltersNews{
+			args: Filters{
+				NewsFilters{
 					CategoryId: 5,
 					TagId:      1,
 				},
@@ -83,11 +66,8 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 		},
 		{
 			name: "Get all news by query (4)",
-			fields: fields{
-				conn,
-			},
-			args: args{
-				FiltersNews{
+			args: Filters{
+				NewsFilters{
 					CategoryId: 10,
 					TagId:      1,
 				},
@@ -104,9 +84,9 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &NewsRepo{
-				db: conn,
+				db: connDB,
 			}
-			list, err := m.GetByFilters(tt.args.newsFilters, tt.args.pageFilters)
+			list, err := m.GetByFilters(tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
@@ -117,42 +97,26 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 }
 
 func TestNewsPG_GetById(t *testing.T) {
-	conn, err := getConnection()
-	assert.NoError(t, err)
-
-	type fields struct {
-		conn *sqlx.DB
-	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    int
 		want    string
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Get news by id (1)",
-			fields: fields{
-				conn,
-			},
+			name:    "Get news by id (1)",
 			args:    1,
 			want:    "Иван Петров",
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Get news by id (2)",
-			fields: fields{
-				conn,
-			},
+			name:    "Get news by id (2)",
 			args:    11,
 			want:    "Анна Петрова",
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Get news by id (3)",
-			fields: fields{
-				conn,
-			},
+			name:    "Get news by id (3)",
 			args:    12,
 			want:    "Михаил Семенов",
 			wantErr: assert.NoError,
@@ -163,7 +127,7 @@ func TestNewsPG_GetById(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			m := &NewsRepo{
-				db: conn,
+				db: connDB,
 			}
 			news, err := m.GetById(tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
@@ -177,30 +141,15 @@ func TestNewsPG_GetById(t *testing.T) {
 }
 
 func TestNewsPG_GetCount(t *testing.T) {
-	type fields struct {
-		db *sqlx.DB
-	}
-	type args struct {
-		categoryId int
-		tagId      int
-	}
-
-	conn, err := getConnection()
-	assert.NoError(t, err)
-
 	tests := []struct {
 		name    string
-		fields  fields
-		args    FiltersNews
+		args    NewsFilters
 		want    int
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Get count by categoryId 1 and tagId 0",
-			fields: fields{
-				conn,
-			},
-			args: FiltersNews{
+			args: NewsFilters{
 				CategoryId: 1,
 				TagId:      0,
 			},
@@ -209,10 +158,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 		},
 		{
 			name: "Get count by categoryId 2 and tagId 0",
-			fields: fields{
-				conn,
-			},
-			args: FiltersNews{
+			args: NewsFilters{
 				CategoryId: 2,
 				TagId:      0,
 			},
@@ -221,10 +167,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 		},
 		{
 			name: "Get count by categoryId 1 and tagId 1",
-			fields: fields{
-				conn,
-			},
-			args: FiltersNews{
+			args: NewsFilters{
 				CategoryId: 1,
 				TagId:      1,
 			},
@@ -233,10 +176,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 		},
 		{
 			name: "Get count by categoryId 2 and tagId 1",
-			fields: fields{
-				conn,
-			},
-			args: FiltersNews{
+			args: NewsFilters{
 				CategoryId: 2,
 				TagId:      1,
 			},
@@ -245,10 +185,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 		},
 		{
 			name: "Get count by categoryId 2 and tagId 2",
-			fields: fields{
-				conn,
-			},
-			args: FiltersNews{
+			args: NewsFilters{
 				CategoryId: 2,
 				TagId:      2,
 			},
@@ -257,10 +194,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 		},
 		{
 			name: "Get count by categoryId 7 and tagId 1",
-			fields: fields{
-				conn,
-			},
-			args: FiltersNews{
+			args: NewsFilters{
 				CategoryId: 7,
 				TagId:      1,
 			},
@@ -272,7 +206,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			m := &NewsRepo{
-				db: tt.fields.db,
+				db: connDB,
 			}
 
 			count, err := m.GetCount(tt.args)

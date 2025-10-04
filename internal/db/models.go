@@ -16,7 +16,7 @@ const (
 )
 
 type (
-	FiltersNews struct {
+	NewsFilters struct {
 		NewsId     int
 		CategoryId int
 		TagId      int
@@ -25,6 +25,11 @@ type (
 	PageFilters struct {
 		PageSize int
 		Page     int
+	}
+
+	Filters struct {
+		News NewsFilters
+		Page PageFilters
 	}
 
 	News struct {
@@ -53,18 +58,7 @@ type (
 	}
 )
 
-func (fil *FiltersNews) NewFilters() string {
-	result := ` "statusId" = :statusID AND "publishedAt" <= now()`
-	if fil.CategoryId != 0 {
-		result = result + ` AND "categoryId" = :categoryID`
-	}
-	if fil.TagId != 0 {
-		result = result + ` AND :tagID = ANY("tagIds")`
-	}
-	return result
-}
-
-func (fil *FiltersNews) NewNewsFilters() string {
+func (fil *NewsFilters) NewFilters() string {
 	result := ` n."statusId" = :statusID AND n."publishedAt" <= now()`
 	if fil.CategoryId != 0 {
 		result = result + ` AND n."categoryId" = :categoryID`
@@ -73,6 +67,18 @@ func (fil *FiltersNews) NewNewsFilters() string {
 		result = result + ` AND :tagID = ANY(n."tagIds")`
 	}
 	return result
+}
+
+func (fil *PageFilters) paginator() (int, int) {
+	limit, offset := 10, 0
+	if fil.Page == 1 {
+		limit = fil.PageSize
+		offset = 0
+	} else {
+		limit = fil.PageSize
+		offset = fil.Page * fil.PageSize
+	}
+	return limit, offset
 }
 
 func removeDuper(numbers pq.Int64Array) pq.Int64Array {
@@ -86,4 +92,21 @@ func removeDuper(numbers pq.Int64Array) pq.Int64Array {
 		}
 	}
 	return result
+}
+
+func NewFilters(
+	newsId, categoryId, tagId,
+	pageSize, page int,
+) Filters {
+	return Filters{
+		NewsFilters{
+			NewsId:     newsId,
+			CategoryId: categoryId,
+			TagId:      tagId,
+		},
+		PageFilters{
+			PageSize: pageSize,
+			Page:     page,
+		},
+	}
 }

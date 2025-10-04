@@ -1,13 +1,18 @@
 package newsportal
 
-import (
-	"News-portal/internal/db"
-)
+import "News-portal/internal/db"
 
-func newsDtoToJson(
+func NewCategory(c db.Categories) Category {
+	return Category{
+		CategoryID: c.CategoryID,
+		Title:      c.Title,
+	}
+}
+
+func NewNews(
 	newsDB db.News,
 	tags []Tag,
-	categoryDB db.Categories,
+	categoryDB Category,
 ) News {
 	return News{
 		NewsID:  newsDB.NewsID,
@@ -24,9 +29,10 @@ func newsDtoToJson(
 	}
 }
 
-func shortNewsDtoToJson(
-	newsDB db.ShortNews,
+func NewNewsShort(
+	newsDB db.News,
 	tags []Tag,
+	tagIds []int64,
 	categoryDB db.Categories,
 ) ShortNews {
 	return ShortNews{
@@ -36,7 +42,23 @@ func shortNewsDtoToJson(
 			CategoryID: categoryDB.CategoryID,
 			Title:      categoryDB.Title,
 		},
-		TagIds:      tags,
+		TagIds:      tagIds,
+		Tags:        tags,
 		PublishedAt: newsDB.PublishedAt,
 	}
+}
+
+func NewTag(tagDB db.Tags) Tag {
+	return Tag{
+		TagID: tagDB.TagID,
+		Title: tagDB.Title,
+	}
+}
+
+func NewFilterDB(fil Filters) db.Filters {
+	filter := db.NewFilters(
+		fil.News.NewsId, fil.News.CategoryId, fil.News.TagId,
+		fil.Page.PageSize, fil.Page.Page,
+	)
+	return filter
 }

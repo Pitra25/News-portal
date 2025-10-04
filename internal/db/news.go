@@ -12,35 +12,27 @@ type NewsRepo struct {
 	db *sqlx.DB
 }
 
-func NewNewsPG(db *sqlx.DB) *NewsRepo {
+func NewsInit(db *sqlx.DB) *NewsRepo {
 	return &NewsRepo{
 		db: db,
 	}
 }
 
-func (m *NewsRepo) GetByFilters(filter FiltersNews, pageF PageFilters) ([]News, error) {
-	// default values
-	var limit, offset = 10, 0
-
-	if pageF.Page == 1 {
-		limit = pageF.PageSize
-		offset = 0
-	} else {
-		limit = pageF.PageSize
-		offset = pageF.Page * pageF.PageSize
-	}
+func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
+	// formation of restrictions
+	var limit, offset = fil.Page.paginator()
 
 	// forming a request and parameters
 	//query := `SELECT n.*, n."statusId", c."categoryId" FROM newsportal.news n INNER JOIN newsportal.categories c ON c."categoryId" = n."categoryId"
-	//		WHERE` + filter.NewFilters() + ` LIMIT :limit OFFSET :offset`
+	//		WHERE` + filter.Filters() + ` LIMIT :limit OFFSET :offset`
 
-	query := `SELECT n.*, c."categoryId" FROM newsportal.news n INNER JOIN newsportal.categories c ON c."categoryId" = n."categoryId"
-		WHERE ` + filter.NewNewsFilters() + ` ORDER BY n."publishedAt" DESC LIMIT :limit OFFSET :offset`
+	query := `SELECT n.*, c."categoryId" FROM ` + newsTable + ` n INNER JOIN ` + categoriesTable + ` c ON c."categoryId" = n."categoryId"
+		WHERE ` + fil.News.NewFilters() + ` ORDER BY n."publishedAt" DESC LIMIT :limit OFFSET :offset`
 
 	params := map[string]interface{}{
 		"statusID":   newsStatus,
-		"categoryID": filter.CategoryId,
-		"tagID":      filter.TagId,
+		"categoryID": fil.News.CategoryId,
+		"tagID":      fil.News.TagId,
 		"limit":      limit,
 		"offset":     offset,
 	}
@@ -75,7 +67,7 @@ func (m *NewsRepo) GetById(id int) (News, error) {
 
 	var (
 		result News
-		query  = `SELECT * FROM newsportal.news n WHERE n."newsId" = $1 AND n."statusId" = $2 AND n."publishedAt" <= now()`
+		query  = `SELECT * FROM ` + newsTable + ` n WHERE n."newsId" = $1 AND n."statusId" = $2 AND n."publishedAt" <= now()`
 		params = []interface{}{id, newsStatus}
 	)
 
@@ -87,24 +79,18 @@ func (m *NewsRepo) GetById(id int) (News, error) {
 		return result, err
 	}
 
-	//for rows.Next() {
-	//	if err := rows.Scan(&result); err != nil {
-	//		return result, err
-	//	}
-	//}
-
 	return result, nil
 }
 
-func (m *NewsRepo) GetCount(filter FiltersNews) (int, error) {
+func (m *NewsRepo) GetCount(filter Filters) (int, error) {
 
 	var (
 		count  int
-		query  = `SELECT COUNT(*) FROM newsportal.news WHERE` + filter.NewFilters()
+		query  = `SELECT COUNT(*) FROM ` + newsTable + ` n WHERE` + filter.News.NewFilters()
 		params = map[string]interface{}{
 			"statusID":   newsStatus,
-			"categoryID": filter.CategoryId,
-			"tagID":      filter.TagId,
+			"categoryID": filter.News.CategoryId,
+			"tagID":      filter.News.TagId,
 		}
 	)
 

@@ -29,7 +29,7 @@ func main() {
 		return
 	}
 
-	conn, err := db.Connection(
+	conn, err := db.Connect(
 		cfg.Database.DatabaseURL(),
 		cfg.Database.MaxIdleCons,
 		cfg.Database.MaxIdleCons,

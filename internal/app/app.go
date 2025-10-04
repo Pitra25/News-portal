@@ -21,12 +21,12 @@ type App struct {
 func New(cfg *config, dbInit *sqlx.DB) *App {
 
 	conn := db.Init(dbInit)
-	service := newsportal.NewRepo(conn)
-	rest := rest.New(service)
+	manager := newsportal.NewManager(conn)
+	router := rest.NewRouter(manager)
 
 	srv := &http.Server{
 		Addr:         cfg.Server.ServerAddress(),
-		Handler:      rest.InitRoutes(),
+		Handler:      router.InitRoutes(),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}

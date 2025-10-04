@@ -1,11 +1,16 @@
 package rest
 
-import "time"
+import (
+	"News-portal/internal/newsportal"
+	"time"
+)
 
 type (
-	Statuses struct {
-		StatusID int    `json:"statusId"`
-		Title    string `json:"title"`
+	queryParams struct {
+		CategoryId int `form:"categoryId"`
+		TagId      int `form:"tagId"`
+		PageSize   int `form:"pageSize"`
+		Page       int `form:"page"`
 	}
 
 	Tag struct {
@@ -34,10 +39,18 @@ type (
 		Category    Category  `json:"category"`
 		TagIds      []Tag     `json:"tagIds"`
 	}
-
-	Categories struct {
-		CategoryID  int    `json:"categoryId"`
-		Title       string `json:"title"`
-		OrderNumber int    `json:"orderNumber"`
-	}
 )
+
+func (q *queryParams) NewFilter() newsportal.Filters {
+	return newsportal.Filters{
+		News: newsportal.NewsFilters{
+			NewsId:     0,
+			TagId:      q.TagId,
+			CategoryId: q.CategoryId,
+		},
+		Page: newsportal.PageFilters{
+			PageSize: q.PageSize,
+			Page:     q.Page,
+		},
+	}
+}

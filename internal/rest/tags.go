@@ -2,35 +2,12 @@ package rest
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) GetAllTags(c *gin.Context) {
-	tags, err := h.service.Tags.GetAll()
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"data": tags,
-		},
-	)
-}
-
-func (h *Handler) GetTagById(c *gin.Context) {
-	idStr, _ := c.Params.Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	tags, err := h.service.Tags.GetById(id)
+func (h *Router) GetAllTags(c *gin.Context) {
+	tags, err := h.newsportal.GetAllTag()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

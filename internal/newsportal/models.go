@@ -3,6 +3,22 @@ package newsportal
 import "time"
 
 type (
+	NewsFilters struct {
+		NewsId     int
+		CategoryId int
+		TagId      int
+	}
+
+	PageFilters struct {
+		PageSize int
+		Page     int
+	}
+
+	Filters struct {
+		News NewsFilters
+		Page PageFilters
+	}
+
 	Statuses struct {
 		StatusID int
 		Title    string
@@ -34,6 +50,24 @@ type (
 		Title       string
 		PublishedAt time.Time
 		Category    Category
-		TagIds      []Tag
+		Tags        []Tag
+		TagIds      []int64
 	}
 )
+
+func NewFilters(
+	newsId, categoryId, tagId,
+	pageSize, page int,
+) Filters {
+	return Filters{
+		NewsFilters{
+			NewsId:     newsId,
+			CategoryId: categoryId,
+			TagId:      tagId,
+		},
+		PageFilters{
+			PageSize: pageSize,
+			Page:     page,
+		},
+	}
+}
