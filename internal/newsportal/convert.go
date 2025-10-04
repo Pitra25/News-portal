@@ -29,25 +29,6 @@ func NewNews(
 	}
 }
 
-func NewNewsShort(
-	newsDB db.News,
-	tags []Tag,
-	tagIds []int64,
-	categoryDB db.Categories,
-) ShortNews {
-	return ShortNews{
-		NewsID: newsDB.NewsID,
-		Title:  newsDB.Title,
-		Category: Category{
-			CategoryID: categoryDB.CategoryID,
-			Title:      categoryDB.Title,
-		},
-		TagIds:      tagIds,
-		Tags:        tags,
-		PublishedAt: newsDB.PublishedAt,
-	}
-}
-
 func NewTag(tagDB db.Tags) Tag {
 	return Tag{
 		TagID: tagDB.TagID,

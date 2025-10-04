@@ -22,31 +22,9 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 		return nil, err
 	}
 
-	// формирование массивов id категорий и тегов новости
-	tagIds := map[int][]int64{}
-	tagIdsArr := []int{}
-	categoryIdArr := []int{}
-	for _, v := range newsDB {
-		tagIds[v.NewsID] = v.TagIds
-		tagIdsArr = append(tagIdsArr, v.NewsID)
-		categoryIdArr = append(categoryIdArr, v.CategoryID)
-	}
-
-	// Get the name of the news tags
-	tags, err := m.db.Tags.GetByID(tagIdsArr)
+	tagsArr, categoryArr, tagIds, err := getTagsAndCategory(m, newsDB)
 	if err != nil {
-		return []News{}, err
-	}
-	// transform news into a new type
-	newTag := []Tag{}
-	for _, v := range tags {
-		newTag = append(newTag, NewTag(v))
-	}
-
-	// getting the name of the news category
-	newCategory, err := m.db.Categories.GetById(categoryIdArr)
-	if err != nil {
-		return []News{}, err
+		return nil, err
 	}
 
 	// собрать все в массив новостей
@@ -54,20 +32,7 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 	// обойти массив новостей
 	for _, v := range newsDB {
 		// найти объект с нужными тегами
-		tags := []Tag{}
-		for _, tag := range newTag {
-			if tag.TagID == int(v.TagIds[0]) {
-				tags = append(tags, tag)
-			}
-		}
-
-		// найти объект с нужной категорией
-		category := Category{}
-		for _, cat := range newCategory {
-			if cat.CategoryID == v.CategoryID {
-				category = NewCategory(cat)
-			}
-		}
+		tags, category := GetNewsMetadata(tagsArr, categoryArr, v)
 
 		// собрать все в 1 новости
 		result = append(result, News{
@@ -94,30 +59,9 @@ func (m *Manager) GetALlShortNewsByFilters(fil Filters) ([]ShortNews, error) {
 	}
 
 	// формирование массивов id категорий и тегов новости
-	tagIds := map[int][]int64{}
-	tagIdsArr := []int{}
-	categoryIdArr := []int{}
-	for _, v := range newsDB {
-		tagIds[v.NewsID] = v.TagIds
-		tagIdsArr = append(tagIdsArr, v.NewsID)
-		categoryIdArr = append(categoryIdArr, v.CategoryID)
-	}
-
-	// Get the name of the news tags
-	tags, err := m.db.Tags.GetByID(tagIdsArr)
+	tagsArr, categoryArr, tagIds, err := getTagsAndCategory(m, newsDB)
 	if err != nil {
-		return []ShortNews{}, err
-	}
-	// transform news into a new type
-	newTag := []Tag{}
-	for _, v := range tags {
-		newTag = append(newTag, NewTag(v))
-	}
-
-	// getting the name of the news category
-	newCategory, err := m.db.Categories.GetById(categoryIdArr)
-	if err != nil {
-		return []ShortNews{}, err
+		return nil, err
 	}
 
 	// собрать все в массив новостей
@@ -126,7 +70,7 @@ func (m *Manager) GetALlShortNewsByFilters(fil Filters) ([]ShortNews, error) {
 	for _, v := range newsDB {
 		// найти объект с нужными тегами
 		tags := []Tag{}
-		for _, tag := range newTag {
+		for _, tag := range tagsArr {
 			if tag.TagID == int(v.TagIds[0]) {
 				tags = append(tags, tag)
 			}
@@ -134,7 +78,7 @@ func (m *Manager) GetALlShortNewsByFilters(fil Filters) ([]ShortNews, error) {
 
 		// найти объект с нужной категорией
 		category := Category{}
-		for _, cat := range newCategory {
+		for _, cat := range categoryArr {
 			if cat.CategoryID == v.CategoryID {
 				category = NewCategory(cat)
 			}

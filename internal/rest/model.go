@@ -7,6 +7,7 @@ import (
 
 type (
 	queryParams struct {
+		NewsId     int `form:"newsId"`
 		CategoryId int `form:"categoryId"`
 		TagId      int `form:"tagId"`
 		PageSize   int `form:"pageSize"`
@@ -42,15 +43,9 @@ type (
 )
 
 func (q *queryParams) NewFilter() newsportal.Filters {
-	return newsportal.Filters{
-		News: newsportal.NewsFilters{
-			NewsId:     0,
-			TagId:      q.TagId,
-			CategoryId: q.CategoryId,
-		},
-		Page: newsportal.PageFilters{
-			PageSize: q.PageSize,
-			Page:     q.Page,
-		},
-	}
+	filter := newsportal.NewFilters(
+		q.NewsId, q.CategoryId, q.TagId,
+		q.PageSize, q.Page,
+	)
+	return filter
 }

@@ -1,6 +1,9 @@
 package newsportal
 
-import "time"
+import (
+	"News-portal/internal/db"
+	"time"
+)
 
 type (
 	NewsFilters struct {
@@ -70,4 +73,60 @@ func NewFilters(
 			Page:     page,
 		},
 	}
+}
+
+func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map[int][]int64, error) {
+
+	tag := []Tag{}
+	categories := []db.Categories{}
+
+	// Собираем ID для запросов
+	tagIds := map[int][]int64{}
+	tagIdsArr := []int{}
+	categoryIdArr := []int{}
+
+	for _, v := range data {
+		tagIds[v.NewsID] = v.TagIds
+		tagIdsArr = append(tagIdsArr, v.NewsID)
+		categoryIdArr = append(categoryIdArr, v.CategoryID)
+	}
+
+	// Получаем теги
+	tagData, err := m.db.Tags.GetByID(tagIdsArr)
+	if err != nil {
+		return tag, categories, tagIds, err
+	}
+
+	// Преобразуем теги
+	for _, v := range tagData {
+		tag = append(tag, NewTag(v))
+	}
+
+	// Получаем категории
+	categories, err = m.db.Categories.GetById(categoryIdArr)
+	if err != nil {
+		return tag, categories, tagIds, err
+	}
+
+	return tag, categories, tagIds, nil
+}
+
+func GetNewsMetadata(tagsArr []Tag, categoryArr []db.Categories, v db.News) ([]Tag, Category) {
+	// найти объект с нужными тегами
+	tags := []Tag{}
+	for _, tag := range tagsArr {
+		if tag.TagID == int(v.TagIds[0]) {
+			tags = append(tags, tag)
+		}
+	}
+
+	// найти объект с нужной категорией
+	category := Category{}
+	for _, cat := range categoryArr {
+		if cat.CategoryID == v.CategoryID {
+			category = NewCategory(cat)
+		}
+	}
+
+	return tags, category
 }
