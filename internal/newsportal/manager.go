@@ -105,9 +105,9 @@ func (m *Manager) GetNewsById(id int) (News, error) {
 	}
 
 	// Get the name of the news tags
-	var tagIds []int
+	var tagIds []int64
 	for _, v := range data.TagIds {
-		tagIds = append(tagIds, int(v))
+		tagIds = append(tagIds, v)
 	}
 	tags, err := m.db.Tags.GetByID(tagIds)
 	if err != nil {
@@ -146,7 +146,7 @@ func (m *Manager) GetAllTag() ([]Tag, error) {
 		return nil, err
 	}
 
-	var result = make([]Tag, len(data))
+	var result []Tag
 	for _, tag := range data {
 		result = append(result, NewTag(tag))
 	}
@@ -154,14 +154,13 @@ func (m *Manager) GetAllTag() ([]Tag, error) {
 	return result, nil
 }
 
-func (m *Manager) GetAllCategory(fil Filters) ([]Category, error) {
-	filter := NewFilterDB(fil)
-	data, err := m.db.Categories.GetAll(filter)
+func (m *Manager) GetAllCategory() ([]Category, error) {
+	data, err := m.db.Categories.GetAll()
 	if err != nil {
 		return nil, err
 	}
 
-	var result = make([]Category, len(data))
+	var result []Category
 	for _, v := range data {
 		result = append(result, NewCategory(v))
 	}

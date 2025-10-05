@@ -13,7 +13,7 @@ func (h *Router) GetAllTags(c *gin.Context) {
 		return
 	}
 
-	tags := make([]Tag, len(tagsArr))
+	var tags []Tag
 	for _, v := range tagsArr {
 		tags = append(tags, NewTag(v))
 	}

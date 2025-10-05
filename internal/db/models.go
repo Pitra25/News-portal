@@ -33,28 +33,41 @@ type (
 	}
 
 	News struct {
-		NewsID      int           `db:"newsId"`
-		Title       string        `db:"title"`
-		Content     string        `db:"content"`
-		Author      string        `db:"author"`
-		CategoryID  int           `db:"categoryId"`
-		TagIds      pq.Int64Array `db:"tagIds"`
-		CreatedAt   time.Time     `db:"createdAt,readonly"`
-		PublishedAt time.Time     `db:"publishedAt"`
-		StatusID    int           `db:"statusId"`
+		tableName  struct{} `pg:"newsportal.news"`
+		NewsID     int      `pg:"newsId,pk"`
+		Title      string
+		Content    string
+		Author     string
+		CategoryID int `pg:"categoryId"`
+		//Category    *Categories   `pg:"rel:has-one,fk:categoryId"`
+		TagIds      pq.Int64Array `pg:"tagIds"`
+		CreatedAt   time.Time     `pg:"createdAt"`
+		PublishedAt time.Time     `pg:"publishedAt"`
+		StatusID    int           `pg:"statusId"`
+		//Status      *Statuses     `pg:"rel:has-one,fk:statusId"`
+	}
+
+	Statuses struct {
+		tableName struct{} `pg:"newsportal.statuses"`
+		StatusID  int      `pg:"statusId,pk"`
+		Title     string
 	}
 
 	Categories struct {
-		CategoryID  int    `db:"categoryId"`
-		Title       string `db:"title"`
-		OrderNumber int    `db:"orderNumber"`
-		StatusID    int    `db:"statusId"`
+		tableName   struct{} `pg:"newsportal.categories"`
+		CategoryID  int      `pg:"categoryId,pk"`
+		Title       string
+		OrderNumber int `pg:"orderNumber"`
+		StatusID    int `pg:"statusId"`
+		//Status      *Statuses `pg:"rel:has-one,fk:statusId"`
 	}
 
 	Tags struct {
-		TagID    int    `db:"tagId"`
-		Title    string `db:"title"`
-		StatusID int    `db:"statusId"`
+		tableName struct{} `pg:"newsportal.tags"`
+		TagID     int      `pg:"tagId,pk"`
+		Title     string
+		StatusID  int `pg:"statusId"`
+		//Status   *Statuses `pg:"rel:has-one,fk:statusId"`
 	}
 )
 

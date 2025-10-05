@@ -1,17 +1,14 @@
 package db
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/v10"
 )
 
 type TagRepo struct {
-	db *sqlx.DB
+	db *pg.DB
 }
 
-func NewTags(db *sqlx.DB) *TagRepo {
+func NewTags(db *pg.DB) *TagRepo {
 	return &TagRepo{
 		db: db,
 	}
@@ -20,31 +17,24 @@ func NewTags(db *sqlx.DB) *TagRepo {
 func (m *TagRepo) GetAll() ([]Tags, error) {
 	var tagsArr []Tags
 
-	query := fmt.Sprint("SELECT * FROM ", tagsTable)
-
-	if err := m.db.Select(&tagsArr, query); err != nil {
-		return tagsArr, err
+	err := m.db.Model(&tagsArr).
+		Where(`"statusId" = ?`, newsStatus).
+		Select()
+	if err != nil {
+		return nil, err
 	}
 
 	return tagsArr, nil
 }
 
-func (m *TagRepo) GetByID(ids []int) ([]Tags, error) {
+func (m *TagRepo) GetByID(ids []int64) ([]Tags, error) {
 	var tagsArr []Tags
 
-	placeholders := make([]string, len(ids))
-	args := make([]interface{}, len(ids))
-
-	for i, id := range ids {
-		placeholders[i] = fmt.Sprintf("$%d", i+1)
-		args[i] = id
-	}
-
-	query := fmt.Sprintf(`SELECT * FROM %s t WHERE t."tagId" IN (%s)`,
-		tagsTable, strings.Join(placeholders, ","))
-
-	if err := m.db.Select(&tagsArr, query, args...); err != nil {
-		return tagsArr, err
+	if err := m.db.Model(&tagsArr).
+		Where(`"tagId" IN (?)`, pg.In(ids)).
+		Where(`"statusId" = ?`, newsStatus).
+		Select(); err != nil {
+		return nil, err
 	}
 
 	return tagsArr, nil

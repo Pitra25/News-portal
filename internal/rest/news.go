@@ -21,9 +21,9 @@ func (h *Router) GetAllNews(c *gin.Context) {
 		return
 	}
 
-	news := make([]News, len(newsDB))
+	var news []News
 	for _, v := range newsDB {
-		tags := make([]Tag, len(v.Tags))
+		var tags []Tag
 		for _, tag := range v.Tags {
 			tags = append(tags, NewTag(tag))
 		}
@@ -53,9 +53,9 @@ func (h *Router) GetNewsById(c *gin.Context) {
 		return
 	}
 
-	tags := make([]Tag, len(newsArr.Tags))
-	for _, tag := range tags {
-		tags = append(tags, tag)
+	var tags []Tag
+	for _, tag := range newsArr.Tags {
+		tags = append(tags, NewTag(tag))
 	}
 
 	news := NewNews(newsArr, tags)
@@ -82,7 +82,7 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 		return
 	}
 
-	shortNews := make([]ShortNews, len(shortNewsArr))
+	var shortNews []ShortNews
 	for i, v := range shortNewsArr {
 		tags := make([]Tag, len(v.Tags))
 		for _, tag := range tags {

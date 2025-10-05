@@ -1,18 +1,14 @@
 package db
 
 import (
-	"database/sql"
-	"errors"
-	"log/slog"
-
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/v10"
 )
 
 type NewsRepo struct {
-	db *sqlx.DB
+	db *pg.DB
 }
 
-func NewNews(db *sqlx.DB) *NewsRepo {
+func NewNews(db *pg.DB) *NewsRepo {
 	return &NewsRepo{
 		db: db,
 	}
@@ -20,58 +16,33 @@ func NewNews(db *sqlx.DB) *NewsRepo {
 
 func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
 	// formation of restrictions
-	var limit, offset = fil.Page.paginator()
+	var (
+		limit, offset = fil.Page.paginator()
+		results       []News
+	)
 
-	query := `SELECT n.*, c."categoryId" FROM ` + newsTable + ` n INNER JOIN ` + categoriesTable + ` c ON c."categoryId" = n."categoryId"
-		WHERE ` + fil.News.NewFilters() + ` ORDER BY n."publishedAt" DESC LIMIT :limit OFFSET :offset`
-
-	params := map[string]interface{}{
-		"statusID":   newsStatus,
-		"categoryID": fil.News.CategoryId,
-		"tagID":      fil.News.TagId,
-		"limit":      limit,
-		"offset":     offset,
-	}
-
-	// query execution
-	rows, err := m.db.NamedQuery(query, params)
-	if err != nil {
+	if err := m.db.Model(&results).
+		ColumnExpr(`DISTINCT ON ("tagIds") *`).
+		Where(`"statusId" = ?`, newsStatus).
+		Where(`"publishedAt" <= now()`).
+		Where(`? = ANY("tagIds")`, fil.News.TagId).
+		Where(`"categoryId" = ?`, fil.News.CategoryId).
+		Limit(limit).Offset(offset).
+		Select(); err != nil {
 		return nil, err
 	}
-
-	// forming a news list
-	var results []News
-	for rows.Next() {
-		var news News
-
-		if err := rows.StructScan(&news); err != nil {
-			if err == sql.ErrNoRows {
-				return nil, nil
-			}
-			return nil, err
-		}
-		news.TagIds = removeDuper(news.TagIds)
-
-		results = append(results, news)
-	}
-	slog.Info("w", "results", results)
 
 	return results, nil
 }
 
 func (m *NewsRepo) GetById(id int) (News, error) {
 
-	var (
-		result News
-		query  = `SELECT * FROM ` + newsTable + ` n WHERE n."newsId" = $1 AND n."statusId" = $2 AND n."publishedAt" <= now()`
-		params = []interface{}{id, newsStatus}
-	)
-
-	err := m.db.Get(&result, query, params...)
-	if err != nil {
-		if errors.Is(sql.ErrNoRows, err) {
-			return result, nil
-		}
+	result := News{NewsID: id}
+	if err := m.db.Model(&result).
+		Where(`"statusId" = ?`, newsStatus).
+		Where(`"publishedAt" <= now()`).
+		WherePK().
+		Select(); err != nil {
 		return result, err
 	}
 
@@ -80,26 +51,14 @@ func (m *NewsRepo) GetById(id int) (News, error) {
 
 func (m *NewsRepo) GetCount(filter Filters) (int, error) {
 
-	var (
-		count  int
-		query  = `SELECT COUNT(*) FROM ` + newsTable + ` n WHERE` + filter.News.NewFilters()
-		params = map[string]interface{}{
-			"statusID":   newsStatus,
-			"categoryID": filter.News.CategoryId,
-			"tagID":      filter.News.TagId,
-		}
-	)
-
-	rows, err := m.db.NamedQuery(query, params)
+	count, err := m.db.Model((*News)(nil)).
+		Where(`"statusId" = ?`, newsStatus).
+		Where(`"categoryId" = ?`, filter.News.CategoryId).
+		Where(`? = ANY("tagIds")`, filter.News.TagId).
+		Where(`"publishedAt" <= now()`).
+		Count()
 	if err != nil {
 		return count, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		if err := rows.Scan(&count); err != nil {
-			return count, err
-		}
 	}
 
 	return count, nil

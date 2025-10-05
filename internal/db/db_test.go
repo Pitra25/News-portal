@@ -5,31 +5,33 @@ import (
 	"log/slog"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/v10"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
 const (
 	host     = "localhost"
-	port     = 5432
+	port     = "5432"
 	user     = "postgres"
 	password = "postgres"
 	dbname   = "postgres"
 	sslmode  = "disable"
 )
 
-var connDB *sqlx.DB
-
-var dsn = fmt.Sprintf(
-	"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-	host, port, user, password, dbname, sslmode,
+var (
+	connDB *pg.DB
+	opt    = pg.Options{
+		Addr:     host + ":" + port,
+		User:     user,
+		Password: password,
+		Database: dbname,
+	}
 )
 
 func TestMain(m *testing.M) {
-	conn, err := Connect(dsn, 5, 15, 5)
+	conn, err := Connect(&opt)
 	if err != nil {
 		panic(err)
 	}
@@ -45,34 +47,23 @@ func TestMain(m *testing.M) {
 }
 
 func TestConnect(t *testing.T) {
-	type args struct {
-		dsn             string
-		maxOpenCons     int
-		maxIdleCons     int
-		connMaxLifetime time.Duration
-	}
 
 	tests := []struct {
 		name    string
-		args    args
-		want    *sqlx.DB
+		args    *pg.Options
+		want    *pg.DB
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Test new postrgesql",
-			args: args{
-				dsn:             dsn,
-				maxOpenCons:     1,
-				maxIdleCons:     1,
-				connMaxLifetime: time.Minute,
-			},
-			want:    &sqlx.DB{},
+			name:    "Test new postrgesql",
+			args:    &opt,
+			want:    &pg.DB{},
 			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pq, err := Connect(tt.args.dsn, tt.args.maxOpenCons, tt.args.maxIdleCons, tt.args.connMaxLifetime)
+			pq, err := Connect(tt.args)
 			if !tt.wantErr(t, err, fmt.Sprint("error", err)) {
 				return
 			}

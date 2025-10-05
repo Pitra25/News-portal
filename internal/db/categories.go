@@ -1,29 +1,27 @@
 package db
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/v10"
 )
 
 type CategoryRepo struct {
-	db *sqlx.DB
+	db *pg.DB
 }
 
-func NewCategory(db *sqlx.DB) *CategoryRepo {
+func NewCategory(db *pg.DB) *CategoryRepo {
 	return &CategoryRepo{
 		db: db,
 	}
 }
 
-func (m *CategoryRepo) GetAll(fil Filters) ([]Categories, error) {
+func (m *CategoryRepo) GetAll() ([]Categories, error) {
 	var arrCategories []Categories
 
-	query := "SELECT * FROM " + categoriesTable + fil.News.NewFilters()
-
-	if err := m.db.Select(&arrCategories, query); err != nil {
-		return arrCategories, err
+	err := m.db.Model(&arrCategories).
+		Where(`"statusId" = ?`, newsStatus).
+		Select()
+	if err != nil {
+		return nil, err
 	}
 
 	return arrCategories, nil
@@ -32,20 +30,11 @@ func (m *CategoryRepo) GetAll(fil Filters) ([]Categories, error) {
 func (m *CategoryRepo) GetById(ids []int) ([]Categories, error) {
 	var result []Categories
 
-	placeholders := make([]string, len(ids))
-	args := make([]interface{}, len(ids))
-
-	for i, id := range ids {
-		placeholders[i] = fmt.Sprintf("$%d", i+1)
-		args[i] = id
-	}
-
-	query := fmt.Sprintf(`SELECT * FROM %s c WHERE c."categoryId" IN (%s)`,
-		categoriesTable, strings.Join(placeholders, ","))
-
-	//query := fmt.Sprint(`SELECT * FROM `, categoriesTable, ` WHERE "categoryId" = `, id)
-	if err := m.db.Select(&result, query, args...); err != nil {
-		return result, err
+	if err := m.db.Model(&result).
+		Where(`"categoryId" IN (?)`, pg.In(ids)).
+		Where(`"statusId" = ?`, newsStatus).
+		Select(); err != nil {
+		return nil, err
 	}
 
 	return result, nil

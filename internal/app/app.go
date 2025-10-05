@@ -9,18 +9,18 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/v10"
 )
 
 type App struct {
 	cfg *Config
-	db  *sqlx.DB
+	db  *pg.DB
 	srv *http.Server
 }
 
-func New(cfg *Config, dbInit *sqlx.DB) *App {
+func New(cfg *Config, dbInit *pg.DB) *App {
 
-	conn := db.Init(dbInit)
+	conn := db.NewDB(dbInit)
 	manager := newsportal.NewManager(conn)
 	router := rest.NewRouter(manager)
 

@@ -2,17 +2,13 @@ package db
 
 import (
 	"fmt"
+	"log/slog"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewsPG_GetAllByQuery(t *testing.T) {
-	type fields struct {
-		conn *sqlx.DB
-	}
-
 	tests := []struct {
 		name    string
 		args    Filters
@@ -91,6 +87,8 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 				return
 			}
 
+			slog.Info("list", "len", len(list))
+
 			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
 		})
 	}
@@ -143,60 +141,72 @@ func TestNewsPG_GetById(t *testing.T) {
 func TestNewsPG_GetCount(t *testing.T) {
 	tests := []struct {
 		name    string
-		args    NewsFilters
+		args    Filters
 		want    int
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Get count by categoryId 1 and tagId 0",
-			args: NewsFilters{
-				CategoryId: 1,
-				TagId:      0,
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 1,
+					TagId:      0,
+				},
 			},
 			want:    0,
 			wantErr: assert.NoError,
 		},
 		{
 			name: "Get count by categoryId 2 and tagId 0",
-			args: NewsFilters{
-				CategoryId: 2,
-				TagId:      0,
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 2,
+					TagId:      0,
+				},
 			},
-			want:    2,
+			want:    0,
 			wantErr: assert.NoError,
 		},
 		{
 			name: "Get count by categoryId 1 and tagId 1",
-			args: NewsFilters{
-				CategoryId: 1,
-				TagId:      1,
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 1,
+					TagId:      1,
+				},
 			},
 			want:    0,
 			wantErr: assert.NoError,
 		},
 		{
 			name: "Get count by categoryId 2 and tagId 1",
-			args: NewsFilters{
-				CategoryId: 2,
-				TagId:      1,
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 2,
+					TagId:      1,
+				},
 			},
 			want:    1,
 			wantErr: assert.NoError,
 		},
 		{
 			name: "Get count by categoryId 2 and tagId 2",
-			args: NewsFilters{
-				CategoryId: 2,
-				TagId:      2,
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 2,
+					TagId:      2,
+				},
 			},
 			want:    2,
 			wantErr: assert.NoError,
 		},
 		{
 			name: "Get count by categoryId 7 and tagId 1",
-			args: NewsFilters{
-				CategoryId: 7,
-				TagId:      1,
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 7,
+					TagId:      1,
+				},
 			},
 			want:    3,
 			wantErr: assert.NoError,

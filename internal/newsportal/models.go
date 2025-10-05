@@ -77,25 +77,26 @@ func NewFilters(
 
 func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map[int][]int64, error) {
 
+	// Collecting IDs for requests
+	var (
+		tagIdsArr     []int64
+		categoryIdArr []int
+	)
+
+	tagIds := map[int][]int64{}
+	for _, v := range data {
+		tagIds[v.NewsID] = v.TagIds
+		categoryIdArr = append(categoryIdArr, v.CategoryID)
+		for _, tagId := range v.TagIds {
+			tagIdsArr = append(tagIdsArr, tagId)
+		}
+	}
+
+	// Getting the tags
 	var (
 		tag        []Tag
 		categories []db.Categories
 	)
-
-	// Collecting IDs for requests
-	var (
-		tagIdsArr     []int
-		categoryIdArr []int
-		tagIds        map[int][]int64
-	)
-
-	for _, v := range data {
-		tagIds[v.NewsID] = v.TagIds
-		tagIdsArr = append(tagIdsArr, v.NewsID)
-		categoryIdArr = append(categoryIdArr, v.CategoryID)
-	}
-
-	// Getting the tags
 	tagData, err := m.db.Tags.GetByID(tagIdsArr)
 	if err != nil {
 		return tag, categories, tagIds, err
@@ -118,8 +119,8 @@ func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map
 func GetNewsMetadata(tagsArr []Tag, categoryArr []db.Categories, v db.News) ([]Tag, Category) {
 	// find an object with the necessary tags
 	var tags []Tag
-	for _, tag := range tagsArr {
-		if tag.TagID == int(v.TagIds[0]) {
+	for i, tag := range tagsArr {
+		if tag.TagID == int(v.TagIds[i]) {
 			tags = append(tags, tag)
 		}
 	}

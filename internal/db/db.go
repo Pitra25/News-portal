@@ -1,9 +1,11 @@
 package db
 
 import (
-	"time"
+	"context"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/extra/pgdebug"
+	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 	_ "github.com/lib/pq"
 )
 
@@ -13,7 +15,7 @@ type DB struct {
 	Categories *CategoryRepo
 }
 
-func Init(db *sqlx.DB) *DB {
+func NewDB(db *pg.DB) *DB {
 	return &DB{
 		News:       NewNews(db),
 		Tags:       NewTags(db),
@@ -21,23 +23,40 @@ func Init(db *sqlx.DB) *DB {
 	}
 }
 
-func Connect(
-	dsn string,
-	maxOpenCons, maxIdleCons int,
-	connMaxLifetime time.Duration,
-) (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", dsn)
-	if err != nil {
+func Connect(opt *pg.Options) (*pg.DB, error) {
+	db := pg.Connect(opt)
+
+	ctx := context.Background()
+	if err := db.Ping(ctx); err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(maxOpenCons)
-	db.SetMaxIdleConns(maxIdleCons)
-	db.SetConnMaxLifetime(connMaxLifetime)
-
-	if err := db.Ping(); err != nil {
+	if err := createShema(db); err != nil {
 		return nil, err
 	}
+
+	db.AddQueryHook(pgdebug.DebugHook{
+		Verbose: false,
+	})
 
 	return db, nil
+}
+
+func createShema(db *pg.DB) error {
+	models := []interface{}{
+		(*Statuses)(nil),
+		(*Tags)(nil),
+		(*Categories)(nil),
+		(*News)(nil),
+	}
+
+	for _, model := range models {
+		err := db.Model(model).CreateTable(&orm.CreateTableOptions{
+			IfNotExists: true,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

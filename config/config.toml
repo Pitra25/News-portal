@@ -1,6 +1,6 @@
 [Server]
-Host = "localhost"
-Port = "8085"
+Host = "127.0.0.1"
+Port = "8080"
 ReadTimeout = "30s"
 WriteTimeout = "30s"
 ShutdownTimeout = "10s"

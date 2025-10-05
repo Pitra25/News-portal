@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/go-pg/pg/v10"
 )
 
 type Config struct {
@@ -42,23 +43,24 @@ func Load(path string) (*Config, error) {
 	return &conf, nil
 }
 
-func (d *DatabaseConfig) DatabaseURL() string {
+func (d *DatabaseConfig) DBOptions() *pg.Options {
 	if d.Host == "" || d.Port == "" || d.DBName == "" {
 		slog.Error("missing required database configuration",
 			"host", d.Host,
 			"port", d.Port,
 			"dbname", d.DBName,
 		)
+		return nil
 	}
 
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		d.Host, d.Port,
-		os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"),
-		d.DBName, d.SSLMode,
-	)
+	return &pg.Options{
+		Addr:     d.Host + ":" + d.Port,
+		User:     os.Getenv("DB_USERNAME"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Database: d.DBName,
+	}
 }
 
 func (s *ServerConfig) ServerAddress() string {
-	return fmt.Sprintf("http://%s:%s/api", s.Host, s.Port)
+	return fmt.Sprintf("%s:%s", s.Host, s.Port)
 }
