@@ -30,32 +30,9 @@ func Connect(opt *pg.Options) (*pg.DB, error) {
 		return nil, err
 	}
 
-	//if err := createShema(db); err != nil {
-	//	return nil, err
-	//}
-
 	db.AddQueryHook(pgdebug.DebugHook{
-		Verbose: true,
+		Verbose: false,
 	})
 
 	return db, nil
 }
-
-//func createShema(db *pg.DB) error {
-//	models := []interface{}{
-//		(*Statuses)(nil),
-//		(*Tags)(nil),
-//		(*Categories)(nil),
-//		(*News)(nil),
-//	}
-//
-//	for _, model := range models {
-//		err := db.Model(model).CreateTable(&orm.CreateTableOptions{
-//			IfNotExists: true,
-//		})
-//		if err != nil {
-//			return err
-//		}
-//	}
-//	return nil
-//}

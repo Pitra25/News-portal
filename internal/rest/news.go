@@ -1,8 +1,6 @@
 package rest
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -39,13 +37,8 @@ func (h *Router) GetNewsById(c *gin.Context) {
 	}
 
 	news, err := h.newsportal.GetNewsById(newsId)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if news.NewsID == 0 {
-		newErrorResponse(c, http.StatusNoContent, "")
 		return
 	}
 
