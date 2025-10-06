@@ -23,9 +23,12 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 		results       []output.News
 	)
 
-	if err := filters(m.db.Model(&results)).
-		Where(`? = ANY("tagIds")`, fil.News.TagId).
-		Where(`"categoryId" = ?`, fil.News.CategoryId).
+	if err := m.db.Model(&results).
+		Relation("Category.title").
+		Where(`? = ANY("t"."tagIds")`, fil.News.TagId).
+		Where(`"t"."categoryId" = ?`, fil.News.CategoryId).
+		Where(`"t"."statusId" = ?`, newsStatus).
+		Where(`"t"."publishedAt" <= now()`).
 		Limit(limit).Offset(offset).
 		Select(); err != nil {
 		return nil, err
@@ -34,7 +37,6 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 	for _, result := range results {
 		removeDuper(&result)
 	}
-
 	return results, nil
 }
 

@@ -31,7 +31,7 @@ func Connect(opt *pg.Options) (*pg.DB, error) {
 	}
 
 	db.AddQueryHook(pgdebug.DebugHook{
-		Verbose: false,
+		Verbose: true,
 	})
 
 	return db, nil

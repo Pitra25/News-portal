@@ -42,7 +42,7 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 					Page:     1,
 				},
 			},
-			want:    2,
+			want:    4,
 			wantErr: assert.NoError,
 		},
 		{
@@ -175,7 +175,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 					TagId:      1,
 				},
 			},
-			want:    0,
+			want:    2,
 			wantErr: assert.NoError,
 		},
 		{
