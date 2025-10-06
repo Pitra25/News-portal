@@ -11,43 +11,55 @@ func NewCategory(c newsportal.Category) Category {
 	}
 }
 
-func NewTag(tagDB newsportal.Tag) Tag {
-	return Tag{
-		TagID: tagDB.TagID,
-		Title: tagDB.Title,
+func NewCategoryArr(c []newsportal.Category) []Category {
+	var result []Category
+	for _, v := range c {
+		result = append(result, NewCategory(v))
 	}
+	return result
 }
 
-func NewNews(
-	newsDB newsportal.News,
-	tags []Tag,
-) News {
+func NewTag(tagDB []newsportal.Tag) []Tag {
+	var tag []Tag
+	for _, v := range tagDB {
+		tag = append(tag, Tag{
+			TagID: v.TagID,
+			Title: v.Title,
+		})
+	}
+	return tag
+}
+
+func NewNewsArr(newsDB []newsportal.News) []News {
+	var news []News
+	for _, v := range newsDB {
+		news = append(news, NewNews(v))
+	}
+	return news
+}
+
+func NewShortNewsArr(newsDB []newsportal.ShortNews) []ShortNews {
+	var news []ShortNews
+	for _, v := range newsDB {
+		news = append(news, ShortNews{
+			NewsID:      v.NewsID,
+			Title:       v.Title,
+			PublishedAt: v.PublishedAt,
+			Category:    NewCategory(v.Category),
+			TagIds:      NewTag(v.Tags),
+		})
+	}
+	return news
+}
+
+func NewNews(v newsportal.News) News {
 	return News{
-		NewsID:  newsDB.NewsID,
-		Title:   newsDB.Title,
-		Content: newsDB.Content,
-		Author:  newsDB.Author,
-		Category: Category{
-			CategoryID: newsDB.Category.CategoryID,
-			Title:      newsDB.Category.Title,
-		},
-		Tags:        tags,
-		PublishedAt: newsDB.PublishedAt,
-	}
-}
-
-func NewShortNews(
-	newsDB newsportal.ShortNews,
-	tags []Tag,
-) ShortNews {
-	return ShortNews{
-		NewsID:      newsDB.NewsID,
-		Title:       newsDB.Title,
-		PublishedAt: newsDB.PublishedAt,
-		Category: Category{
-			CategoryID: newsDB.Category.CategoryID,
-			Title:      newsDB.Category.Title,
-		},
-		TagIds: tags,
+		NewsID:      v.NewsID,
+		Title:       v.Title,
+		Content:     v.Content,
+		Author:      v.Author,
+		Category:    NewCategory(v.Category),
+		Tags:        NewTag(v.Tags),
+		PublishedAt: v.PublishedAt,
 	}
 }

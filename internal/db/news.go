@@ -1,7 +1,10 @@
 package db
 
 import (
+	"News-portal/output"
+
 	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 type NewsRepo struct {
@@ -14,15 +17,14 @@ func NewNews(db *pg.DB) *NewsRepo {
 	}
 }
 
-func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
+func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 	// formation of restrictions
 	var (
 		limit, offset = fil.Page.paginator()
-		results       []News
+		results       []output.News
 	)
 
 	if err := m.db.Model(&results).
-		ColumnExpr(`DISTINCT ON ("tagIds") *`).
 		Where(`"statusId" = ?`, newsStatus).
 		Where(`"publishedAt" <= now()`).
 		Where(`? = ANY("tagIds")`, fil.News.TagId).
@@ -32,12 +34,21 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
 		return nil, err
 	}
 
+	for _, result := range results {
+		removeDuper(&result)
+	}
+
 	return results, nil
 }
 
-func (m *NewsRepo) GetById(id int) (News, error) {
+func s(orm *orm.Query) *orm.Query {
+	return orm.Where(`"statusId" = ?`, newsStatus).
+		Where(`"publishedAt" <= now()`)
+}
 
-	result := News{NewsID: id}
+func (m *NewsRepo) GetById(id int) (output.News, error) {
+
+	result := output.News{ID: id}
 	if err := m.db.Model(&result).
 		Where(`"statusId" = ?`, newsStatus).
 		Where(`"publishedAt" <= now()`).
@@ -51,7 +62,7 @@ func (m *NewsRepo) GetById(id int) (News, error) {
 
 func (m *NewsRepo) GetCount(filter Filters) (int, error) {
 
-	count, err := m.db.Model((*News)(nil)).
+	count, err := m.db.Model((*output.News)(nil)).
 		Where(`"statusId" = ?`, newsStatus).
 		Where(`"categoryId" = ?`, filter.News.CategoryId).
 		Where(`? = ANY("tagIds")`, filter.News.TagId).

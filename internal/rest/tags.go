@@ -7,21 +7,14 @@ import (
 )
 
 func (h *Router) GetAllTags(c *gin.Context) {
-	tagsArr, err := h.newsportal.GetAllTag()
+	tags, err := h.newsportal.GetAllTag()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var tags []Tag
-	for _, v := range tagsArr {
-		tags = append(tags, NewTag(v))
-	}
-
 	c.JSON(
 		http.StatusOK,
-		gin.H{
-			"data": tags,
-		},
+		NewTag(tags),
 	)
 }

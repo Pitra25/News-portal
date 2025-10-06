@@ -29,7 +29,7 @@ func main() {
 		return
 	}
 
-	conn, err := db.Connect(cfg.Database.DBOptions())
+	conn, err := db.Connect(&cfg.Database)
 	if err != nil {
 		slog.Error("fail init db", "err", err)
 		return

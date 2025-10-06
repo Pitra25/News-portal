@@ -1,6 +1,8 @@
 package db
 
 import (
+	"News-portal/output"
+
 	"github.com/go-pg/pg/v10"
 )
 
@@ -14,8 +16,8 @@ func NewCategory(db *pg.DB) *CategoryRepo {
 	}
 }
 
-func (m *CategoryRepo) GetAll() ([]Categories, error) {
-	var arrCategories []Categories
+func (m *CategoryRepo) GetAll() ([]output.Category, error) {
+	var arrCategories []output.Category
 
 	err := m.db.Model(&arrCategories).
 		Where(`"statusId" = ?`, newsStatus).
@@ -27,8 +29,8 @@ func (m *CategoryRepo) GetAll() ([]Categories, error) {
 	return arrCategories, nil
 }
 
-func (m *CategoryRepo) GetById(ids []int) ([]Categories, error) {
-	var result []Categories
+func (m *CategoryRepo) GetById(ids []int) ([]output.Category, error) {
+	var result []output.Category
 
 	if err := m.db.Model(&result).
 		Where(`"categoryId" IN (?)`, pg.In(ids)).

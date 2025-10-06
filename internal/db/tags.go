@@ -1,6 +1,8 @@
 package db
 
 import (
+	"News-portal/output"
+
 	"github.com/go-pg/pg/v10"
 )
 
@@ -14,8 +16,8 @@ func NewTags(db *pg.DB) *TagRepo {
 	}
 }
 
-func (m *TagRepo) GetAll() ([]Tags, error) {
-	var tagsArr []Tags
+func (m *TagRepo) GetAll() ([]output.Tag, error) {
+	var tagsArr []output.Tag
 
 	err := m.db.Model(&tagsArr).
 		Where(`"statusId" = ?`, newsStatus).
@@ -27,8 +29,8 @@ func (m *TagRepo) GetAll() ([]Tags, error) {
 	return tagsArr, nil
 }
 
-func (m *TagRepo) GetByID(ids []int64) ([]Tags, error) {
-	var tagsArr []Tags
+func (m *TagRepo) GetByID(ids []int) ([]output.Tag, error) {
+	var tagsArr []output.Tag
 
 	if err := m.db.Model(&tagsArr).
 		Where(`"tagId" IN (?)`, pg.In(ids)).

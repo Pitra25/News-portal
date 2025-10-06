@@ -9,7 +9,3 @@ ShutdownTimeout = "10s"
 Host = "localhost"
 Port = "5432"
 DBName = "postgres"
-SSLMode = "disable"
-MaxOpenCons = 25
-MaxIdleCons = 5
-ConnMaxLifetime = "5m"

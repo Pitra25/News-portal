@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -15,26 +17,15 @@ func (h *Router) GetAllNews(c *gin.Context) {
 	}
 	filter := params.NewFilter()
 
-	newsDB, err := h.newsportal.GetNewsByFilters(filter)
+	news, err := h.newsportal.GetNewsByFilters(filter)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var news []News
-	for _, v := range newsDB {
-		var tags []Tag
-		for _, tag := range v.Tags {
-			tags = append(tags, NewTag(tag))
-		}
-		news = append(news, NewNews(v, tags))
-	}
-
 	c.JSON(
 		http.StatusOK,
-		gin.H{
-			"data": news,
-		},
+		NewNewsArr(news),
 	)
 }
 
@@ -47,24 +38,20 @@ func (h *Router) GetNewsById(c *gin.Context) {
 		return
 	}
 
-	newsArr, err := h.newsportal.GetNewsById(newsId)
-	if err != nil {
+	news, err := h.newsportal.GetNewsById(newsId)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var tags []Tag
-	for _, tag := range newsArr.Tags {
-		tags = append(tags, NewTag(tag))
+	if news.NewsID == 0 {
+		newErrorResponse(c, http.StatusNoContent, "")
+		return
 	}
-
-	news := NewNews(newsArr, tags)
 
 	c.JSON(
 		http.StatusOK,
-		gin.H{
-			"data": news,
-		},
+		NewNews(news),
 	)
 }
 
@@ -76,27 +63,15 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 	}
 	filter := params.NewFilter()
 
-	shortNewsArr, err := h.newsportal.GetALlShortNewsByFilters(filter)
+	shortNews, err := h.newsportal.GetALlShortNewsByFilters(filter)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var shortNews []ShortNews
-	for _, v := range shortNewsArr {
-		var tags []Tag
-		for _, tag := range tags {
-			tags = append(tags, tag)
-		}
-
-		shortNews = append(shortNews, NewShortNews(v, tags))
-	}
-
 	c.JSON(
 		http.StatusOK,
-		gin.H{
-			"data": shortNews,
-		},
+		NewShortNewsArr(shortNews),
 	)
 }
 
@@ -116,8 +91,6 @@ func (h *Router) GetNewsCount(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		gin.H{
-			"data": count,
-		},
+		count,
 	)
 }

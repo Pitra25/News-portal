@@ -1,38 +1,73 @@
 package newsportal
 
-import "News-portal/internal/db"
+import (
+	"News-portal/internal/db"
+	"News-portal/output"
+)
 
-func NewCategory(c db.Categories) Category {
+func NewCategory(c output.Category) Category {
 	return Category{
-		CategoryID: c.CategoryID,
+		CategoryID: c.ID,
 		Title:      c.Title,
 	}
 }
 
-func NewTag(tagDB db.Tags) Tag {
-	return Tag{
-		TagID: tagDB.TagID,
-		Title: tagDB.Title,
+func NewCategoryArr(c []output.Category) []Category {
+	var result []Category
+	for _, v := range c {
+		result = append(result, NewCategory(v))
 	}
+	return result
 }
 
 func NewNews(
-	newsDB db.News,
-	categoryDB Category,
+	newsDB output.News,
+	category Category,
 	tags []Tag,
 ) News {
 	return News{
-		NewsID:  newsDB.NewsID,
-		Title:   newsDB.Title,
-		Content: newsDB.Content,
-		Author:  newsDB.Author,
-		Category: Category{
-			CategoryID: categoryDB.CategoryID,
-			Title:      categoryDB.Title,
-		},
+		NewsID:      newsDB.ID,
+		Title:       newsDB.Title,
+		Content:     *newsDB.Content,
+		Author:      newsDB.Author,
+		Category:    category,
 		Tags:        tags,
-		TagIds:      newsDB.TagIds,
+		TagIds:      newsDB.TagIDs,
 		PublishedAt: newsDB.PublishedAt,
+	}
+}
+
+func NewTagArr(tagDB []output.Tag) []Tag {
+	var tag []Tag
+	for _, v := range tagDB {
+		tag = append(tag, Tag{
+			TagID: v.ID,
+			Title: v.Title,
+		})
+	}
+	return tag
+}
+
+//func NewNewsArr(newsDB []db.News) []News {
+//	var news []News
+//	for _, v := range newsDB {
+//		news = append(news, NewNews(v))
+//	}
+//	return news
+//}
+
+func NewShortNewsArr(
+	newsDB output.News,
+	categoryDB Category,
+	tags []Tag,
+) ShortNews {
+	return ShortNews{
+		NewsID:      newsDB.ID,
+		Title:       newsDB.Title,
+		PublishedAt: newsDB.PublishedAt,
+		Category:    categoryDB,
+		TagIds:      newsDB.TagIDs,
+		Tags:        tags,
 	}
 }
 

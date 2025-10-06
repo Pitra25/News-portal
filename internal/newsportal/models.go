@@ -1,7 +1,7 @@
 package newsportal
 
 import (
-	"News-portal/internal/db"
+	"News-portal/output"
 	"time"
 )
 
@@ -43,7 +43,7 @@ type (
 		Content     string
 		Author      string
 		Category    Category
-		TagIds      []int64
+		TagIds      []int
 		Tags        []Tag
 		PublishedAt time.Time
 	}
@@ -54,7 +54,7 @@ type (
 		PublishedAt time.Time
 		Category    Category
 		Tags        []Tag
-		TagIds      []int64
+		TagIds      []int
 	}
 )
 
@@ -75,52 +75,47 @@ func NewFilters(
 	}
 }
 
-func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []db.Categories, map[int][]int64, error) {
+func getTagsAndCategory(m *Manager, data []output.News) ([]Tag, []Category, map[int][]int, error) {
 
 	// Collecting IDs for requests
 	var (
-		tagIdsArr     []int64
+		tagIdsArr     []int
 		categoryIdArr []int
 	)
 
-	tagIds := map[int][]int64{}
+	tagIds := map[int][]int{}
 	for _, v := range data {
-		tagIds[v.NewsID] = v.TagIds
+		tagIds[v.ID] = v.TagIDs
 		categoryIdArr = append(categoryIdArr, v.CategoryID)
-		for _, tagId := range v.TagIds {
-			tagIdsArr = append(tagIdsArr, tagId)
+		for _, tagId := range v.TagIDs {
+			tagIdsArr = append(tagIdsArr, int(tagId))
 		}
 	}
 
 	// Getting the tags
 	var (
 		tag        []Tag
-		categories []db.Categories
+		categories []Category
 	)
 	tagData, err := m.db.Tags.GetByID(tagIdsArr)
 	if err != nil {
 		return tag, categories, tagIds, err
 	}
 
-	// Converting tags
-	for _, v := range tagData {
-		tag = append(tag, NewTag(v))
-	}
-
 	// We get the categories
-	categories, err = m.db.Categories.GetById(categoryIdArr)
+	categoriesDB, err := m.db.Categories.GetById(categoryIdArr)
 	if err != nil {
 		return tag, categories, tagIds, err
 	}
 
-	return tag, categories, tagIds, nil
+	return NewTagArr(tagData), NewCategoryArr(categoriesDB), tagIds, nil
 }
 
-func GetNewsMetadata(tagsArr []Tag, categoryArr []db.Categories, v db.News) ([]Tag, Category) {
+func GetNewsMetadata(tagsArr []Tag, categoryArr []Category, v output.News) ([]Tag, Category) {
 	// find an object with the necessary tags
 	var tags []Tag
 	for i, tag := range tagsArr {
-		if tag.TagID == int(v.TagIds[i]) {
+		if tag.TagID == v.TagIDs[i] {
 			tags = append(tags, tag)
 		}
 	}
@@ -129,7 +124,7 @@ func GetNewsMetadata(tagsArr []Tag, categoryArr []db.Categories, v db.News) ([]T
 	var category Category
 	for _, cat := range categoryArr {
 		if cat.CategoryID == v.CategoryID {
-			category = NewCategory(cat)
+			category = cat
 			break
 		}
 	}

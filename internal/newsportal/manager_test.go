@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/go-pg/pg/v10"
@@ -42,31 +41,49 @@ func TestMain(m *testing.M) {
 }
 
 func TestManager_GetALlShortNewsByFilters(t *testing.T) {
-	type args struct {
-		fil Filters
-	}
 
 	tests := []struct {
 		name    string
-		args    args
-		want    []ShortNews
-		wantErr bool
+		args    Filters
+		want    int
+		wantErr assert.ErrorAssertionFunc
 	}{
-		// TODO: Add test cases.
+		{
+			name: "t1",
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 2,
+					TagId:      1,
+				},
+			},
+			want:    1,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "t2",
+			args: Filters{
+				News: NewsFilters{
+					CategoryId: 10,
+					TagId:      1,
+				},
+			},
+			want:    1,
+			wantErr: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Manager{
 				db: connDB,
 			}
-			got, err := m.GetALlShortNewsByFilters(tt.args.fil)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetALlShortNewsByFilters() error = %v, wantErr %v", err, tt.wantErr)
+			list, err := m.GetALlShortNewsByFilters(tt.args)
+			if !tt.wantErr(t, err, fmt.Sprintf("GetALlShortNewsByFilters() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetALlShortNewsByFilters() got = %v, want %v", got, tt.want)
-			}
+
+			slog.Info("list", "len", len(list))
+
+			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
 		})
 	}
 }
@@ -175,7 +192,7 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 				db: connDB,
 			}
 			list, err := m.GetNewsByFilters(tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
+			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsByFilters() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
 
@@ -221,7 +238,7 @@ func TestManager_GetNewsById(t *testing.T) {
 			}
 
 			news, err := m.GetNewsById(tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
+			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsById() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
 
@@ -292,12 +309,12 @@ func TestManager_GetNewsCount(t *testing.T) {
 			}
 
 			count, err := m.GetNewsCount(tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetCount() error = %e, wantErr %v", err, tt.wantErr)) {
+			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsCount() error = %e, wantErr %v", err, tt.wantErr)) {
 
 				return
 			}
 
-			assert.Equal(t, tt.want, count, fmt.Sprint("GetCount() count: ", count))
+			assert.Equal(t, tt.want, count, fmt.Sprint("GetNewsCount() count: ", count))
 		})
 	}
 }

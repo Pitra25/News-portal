@@ -1,9 +1,7 @@
 package db
 
 import (
-	"time"
-
-	"github.com/lib/pq"
+	"News-portal/output"
 )
 
 const newsStatus = 1 // published
@@ -23,40 +21,6 @@ type (
 	Filters struct {
 		News NewsFilters
 		Page PageFilters
-	}
-
-	News struct {
-		tableName   struct{} `pg:"newsportal.news"`
-		NewsID      int      `pg:"newsId,pk"`
-		Title       string
-		Content     string
-		Author      string
-		CategoryID  int           `pg:"categoryId"`
-		TagIds      pq.Int64Array `pg:"tagIds"`
-		CreatedAt   time.Time     `pg:"createdAt"`
-		PublishedAt time.Time     `pg:"publishedAt"`
-		StatusID    int           `pg:"statusId"`
-	}
-
-	Statuses struct {
-		tableName struct{} `pg:"newsportal.statuses"`
-		StatusID  int      `pg:"statusId,pk"`
-		Title     string
-	}
-
-	Categories struct {
-		tableName   struct{} `pg:"newsportal.categories"`
-		CategoryID  int      `pg:"categoryId,pk"`
-		Title       string
-		OrderNumber int `pg:"orderNumber"`
-		StatusID    int `pg:"statusId"`
-	}
-
-	Tags struct {
-		tableName struct{} `pg:"newsportal.tags"`
-		TagID     int      `pg:"tagId,pk"`
-		Title     string
-		StatusID  int `pg:"statusId"`
 	}
 )
 
@@ -87,4 +51,19 @@ func NewFilters(
 			Page:     page,
 		},
 	}
+}
+
+func removeDuper(news *output.News) *output.News {
+	seen := make(map[int]bool)
+	result := make([]int, 0)
+
+	for _, v := range news.TagIDs {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+	news.TagIDs = result
+
+	return news
 }

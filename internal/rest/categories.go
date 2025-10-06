@@ -14,15 +14,8 @@ func (h *Router) GetAllCategories(c *gin.Context) {
 		return
 	}
 
-	var category []Category
-	for _, v := range categories {
-		category = append(category, NewCategory(v))
-	}
-
 	c.JSON(
 		http.StatusOK,
-		gin.H{
-			"data": category,
-		},
+		NewCategoryArr(categories),
 	)
 }

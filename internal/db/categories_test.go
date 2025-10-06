@@ -1,6 +1,7 @@
 package db
 
 import (
+	"News-portal/output"
 	"fmt"
 	"log/slog"
 	"testing"
@@ -25,41 +26,45 @@ func TestCategoriesPG_GetAll(t *testing.T) {
 	)
 }
 
+func intPtr(i int) *int {
+	return &i
+}
+
 func TestCategoryRepo_GetById(t *testing.T) {
 
 	tests := []struct {
 		name    string
 		args    []int
-		want    []Categories
+		want    []output.Category
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "1",
 			args: []int{1, 2, 3},
-			want: []Categories{
-				{CategoryID: 1, Title: "Политика", OrderNumber: 1, StatusID: 1},
-				{CategoryID: 2, Title: "Экономика", OrderNumber: 2, StatusID: 1},
-				{CategoryID: 3, Title: "Технологии", OrderNumber: 3, StatusID: 1},
+			want: []output.Category{
+				{ID: 1, Title: "Политика", OrderNumber: intPtr(2), StatusID: 1},
+				{ID: 2, Title: "Экономика", OrderNumber: intPtr(2), StatusID: 1},
+				{ID: 3, Title: "Технологии", OrderNumber: intPtr(3), StatusID: 1},
 			},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "2",
 			args: []int{2, 8, 5},
-			want: []Categories{
-				{CategoryID: 2, Title: "Экономика", OrderNumber: 2, StatusID: 1},
-				{CategoryID: 5, Title: "Культура", OrderNumber: 5, StatusID: 1},
-				{CategoryID: 8, Title: "Образование", OrderNumber: 8, StatusID: 1},
+			want: []output.Category{
+				{ID: 2, Title: "Экономика", OrderNumber: intPtr(2), StatusID: 1},
+				{ID: 5, Title: "Культура", OrderNumber: intPtr(5), StatusID: 1},
+				{ID: 8, Title: "Образование", OrderNumber: intPtr(8), StatusID: 1},
 			},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "3",
 			args: []int{5, 1, 8},
-			want: []Categories{
-				{CategoryID: 1, Title: "Политика", OrderNumber: 1, StatusID: 1},
-				{CategoryID: 5, Title: "Культура", OrderNumber: 5, StatusID: 1},
-				{CategoryID: 8, Title: "Образование", OrderNumber: 8, StatusID: 1},
+			want: []output.Category{
+				{ID: 1, Title: "Политика", OrderNumber: intPtr(1), StatusID: 1},
+				{ID: 5, Title: "Культура", OrderNumber: intPtr(5), StatusID: 1},
+				{ID: 8, Title: "Образование", OrderNumber: intPtr(8), StatusID: 1},
 			},
 			wantErr: assert.NoError,
 		},
