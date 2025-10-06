@@ -36,10 +36,10 @@ func NewNews(
 	}
 }
 
-func NewFilterDB(fil Filters) db.Filters {
+func (f *Filters) ToDB() db.Filters {
 	filter := db.NewFilters(
-		fil.News.NewsId, fil.News.CategoryId, fil.News.TagId,
-		fil.Page.PageSize, fil.Page.Page,
+		f.News.NewsId, f.News.CategoryId, f.News.TagId,
+		f.Page.PageSize, f.Page.Page,
 	)
 	return filter
 }

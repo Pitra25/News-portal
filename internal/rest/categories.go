@@ -7,11 +7,6 @@ import (
 )
 
 func (h *Router) GetAllCategories(c *gin.Context) {
-	//var params queryParams
-	//if err := c.ShouldBindQuery(&params); err != nil {
-	//	c.JSON(400, gin.H{"error": err.Error()})
-	//	return
-	//}
 
 	categories, err := h.newsportal.GetAllCategory()
 	if err != nil {

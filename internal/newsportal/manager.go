@@ -16,7 +16,7 @@ func NewManager(db *db.DB) *Manager {
 
 func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 
-	filter := NewFilterDB(fil)
+	filter := fil.ToDB()
 	newsDB, err := m.db.News.GetByFilters(filter)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 
 func (m *Manager) GetALlShortNewsByFilters(fil Filters) ([]ShortNews, error) {
 
-	filter := NewFilterDB(fil)
+	filter := fil.ToDB()
 	newsDB, err := m.db.News.GetByFilters(filter)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (m *Manager) GetNewsById(id int) (News, error) {
 }
 
 func (m *Manager) GetNewsCount(fil Filters) (int, error) {
-	filter := NewFilterDB(fil)
+	filter := fil.ToDB()
 	return m.db.News.GetCount(filter)
 }
 

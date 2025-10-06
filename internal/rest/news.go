@@ -83,13 +83,13 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 	}
 
 	var shortNews []ShortNews
-	for i, v := range shortNewsArr {
-		tags := make([]Tag, len(v.Tags))
+	for _, v := range shortNewsArr {
+		var tags []Tag
 		for _, tag := range tags {
 			tags = append(tags, tag)
 		}
 
-		shortNews = append(shortNews, NewShortNews(shortNewsArr[i], tags))
+		shortNews = append(shortNews, NewShortNews(v, tags))
 	}
 
 	c.JSON(

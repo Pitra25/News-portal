@@ -22,13 +22,13 @@ func TestTagRepo_GetByID(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		args    []int
+		args    []int64
 		want    []Tags
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "test 1",
-			args: []int{1, 2, 10},
+			args: []int64{1, 2, 10},
 			want: []Tags{
 				{TagID: 1, Title: "Новости", StatusID: 1},
 				{TagID: 2, Title: "Аналитика", StatusID: 1},
@@ -38,7 +38,7 @@ func TestTagRepo_GetByID(t *testing.T) {
 		},
 		{
 			name: "test 2",
-			args: []int{1, 6, 9},
+			args: []int64{1, 6, 9},
 			want: []Tags{
 				{TagID: 1, Title: "Новости", StatusID: 1},
 				{TagID: 6, Title: "Обзор", StatusID: 1},
@@ -48,7 +48,7 @@ func TestTagRepo_GetByID(t *testing.T) {
 		},
 		{
 			name: "test 3",
-			args: []int{1, 5, 9},
+			args: []int64{1, 5, 9},
 			want: []Tags{
 				{TagID: 1, Title: "Новости", StatusID: 1},
 				{TagID: 5, Title: "Реportаж", StatusID: 1},
@@ -58,7 +58,7 @@ func TestTagRepo_GetByID(t *testing.T) {
 		},
 		{
 			name: "test 4",
-			args: []int{1, 4, 5},
+			args: []int64{1, 4, 5},
 			want: []Tags{
 				{TagID: 1, Title: "Новости", StatusID: 1},
 				{TagID: 4, Title: "Интервью", StatusID: 1},
