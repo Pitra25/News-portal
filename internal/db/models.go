@@ -6,14 +6,7 @@ import (
 	"github.com/lib/pq"
 )
 
-const (
-	newsTable       = "newsportal.news"
-	statusesTable   = "newsportal.statuses"
-	tagsTable       = "newsportal.tags"
-	categoriesTable = "newsportal.categories"
-
-	newsStatus = 1 // published
-)
+const newsStatus = 1 // published
 
 type (
 	NewsFilters struct {
