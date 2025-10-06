@@ -4,7 +4,6 @@ import (
 	"News-portal/output"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/go-pg/pg/v10/orm"
 )
 
 type NewsRepo struct {
@@ -24,9 +23,7 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 		results       []output.News
 	)
 
-	if err := m.db.Model(&results).
-		Where(`"statusId" = ?`, newsStatus).
-		Where(`"publishedAt" <= now()`).
+	if err := filters(m.db.Model(&results)).
 		Where(`? = ANY("tagIds")`, fil.News.TagId).
 		Where(`"categoryId" = ?`, fil.News.CategoryId).
 		Limit(limit).Offset(offset).
@@ -41,17 +38,10 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 	return results, nil
 }
 
-func s(orm *orm.Query) *orm.Query {
-	return orm.Where(`"statusId" = ?`, newsStatus).
-		Where(`"publishedAt" <= now()`)
-}
-
 func (m *NewsRepo) GetById(id int) (output.News, error) {
 
 	result := output.News{ID: id}
-	if err := m.db.Model(&result).
-		Where(`"statusId" = ?`, newsStatus).
-		Where(`"publishedAt" <= now()`).
+	if err := filters(m.db.Model(&result)).
 		WherePK().
 		Select(); err != nil {
 		return result, err
@@ -62,11 +52,9 @@ func (m *NewsRepo) GetById(id int) (output.News, error) {
 
 func (m *NewsRepo) GetCount(filter Filters) (int, error) {
 
-	count, err := m.db.Model((*output.News)(nil)).
-		Where(`"statusId" = ?`, newsStatus).
+	count, err := filters(m.db.Model((*output.News)(nil))).
 		Where(`"categoryId" = ?`, filter.News.CategoryId).
 		Where(`? = ANY("tagIds")`, filter.News.TagId).
-		Where(`"publishedAt" <= now()`).
 		Count()
 	if err != nil {
 		return count, err

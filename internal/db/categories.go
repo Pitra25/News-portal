@@ -19,8 +19,7 @@ func NewCategory(db *pg.DB) *CategoryRepo {
 func (m *CategoryRepo) GetAll() ([]output.Category, error) {
 	var arrCategories []output.Category
 
-	err := m.db.Model(&arrCategories).
-		Where(`"statusId" = ?`, newsStatus).
+	err := filters(m.db.Model(&arrCategories)).
 		Select()
 	if err != nil {
 		return nil, err
@@ -32,9 +31,8 @@ func (m *CategoryRepo) GetAll() ([]output.Category, error) {
 func (m *CategoryRepo) GetById(ids []int) ([]output.Category, error) {
 	var result []output.Category
 
-	if err := m.db.Model(&result).
+	if err := filters(m.db.Model(&result)).
 		Where(`"categoryId" IN (?)`, pg.In(ids)).
-		Where(`"statusId" = ?`, newsStatus).
 		Select(); err != nil {
 		return nil, err
 	}

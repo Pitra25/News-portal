@@ -2,6 +2,8 @@ package db
 
 import (
 	"News-portal/output"
+
+	"github.com/go-pg/pg/v10/orm"
 )
 
 const newsStatus = 1 // published
@@ -51,6 +53,12 @@ func NewFilters(
 			Page:     page,
 		},
 	}
+}
+
+func filters(orm *orm.Query) *orm.Query {
+	return orm.Where(`"statusId" = ?`, newsStatus).
+		Where(`"publishedAt" <= now()`)
+
 }
 
 func removeDuper(news *output.News) *output.News {

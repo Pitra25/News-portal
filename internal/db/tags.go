@@ -19,8 +19,7 @@ func NewTags(db *pg.DB) *TagRepo {
 func (m *TagRepo) GetAll() ([]output.Tag, error) {
 	var tagsArr []output.Tag
 
-	err := m.db.Model(&tagsArr).
-		Where(`"statusId" = ?`, newsStatus).
+	err := filters(m.db.Model(&tagsArr)).
 		Select()
 	if err != nil {
 		return nil, err
@@ -32,9 +31,8 @@ func (m *TagRepo) GetAll() ([]output.Tag, error) {
 func (m *TagRepo) GetByID(ids []int) ([]output.Tag, error) {
 	var tagsArr []output.Tag
 
-	if err := m.db.Model(&tagsArr).
+	if err := filters(m.db.Model(&tagsArr)).
 		Where(`"tagId" IN (?)`, pg.In(ids)).
-		Where(`"statusId" = ?`, newsStatus).
 		Select(); err != nil {
 		return nil, err
 	}
