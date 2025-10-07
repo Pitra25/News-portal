@@ -1,8 +1,6 @@
 package db
 
 import (
-	"News-portal/output"
-
 	"github.com/go-pg/pg/v10"
 )
 
@@ -16,17 +14,15 @@ func NewNews(db *pg.DB) *NewsRepo {
 	}
 }
 
-func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
+func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
 	// formation of restrictions
 	var (
 		limit, offset = fil.Page.paginator()
-		results       []output.News
+		results       []News
 	)
 
-	if err := filters(m.db.Model(&results)).
-		Relation("Category.title").
-		Where(`? = ANY("t"."tagIds")`, fil.News.TagId).
-		Where(`"t"."categoryId" = ?`, fil.News.CategoryId).
+	if err := filters(m.db.Model(&results), fil).
+		Relation("Category").
 		Limit(limit).Offset(offset).
 		Select(); err != nil {
 		return nil, err
@@ -38,10 +34,11 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 	return results, nil
 }
 
-func (m *NewsRepo) GetById(id int) (output.News, error) {
+func (m *NewsRepo) GetById(id int) (News, error) {
 
-	result := output.News{ID: id}
-	if err := filters(m.db.Model(&result)).
+	result := News{ID: id}
+	if err := filters(m.db.Model(&result), Filters{}).
+		Relation("Category").
 		WherePK().
 		Select(); err != nil {
 		return result, err
@@ -52,9 +49,7 @@ func (m *NewsRepo) GetById(id int) (output.News, error) {
 
 func (m *NewsRepo) GetCount(filter Filters) (int, error) {
 
-	count, err := filters(m.db.Model((*output.News)(nil))).
-		Where(`"t"."categoryId" = ?`, filter.News.CategoryId).
-		Where(`? = ANY("t"."tagIds")`, filter.News.TagId).
+	count, err := filters(m.db.Model((*News)(nil)), filter).
 		Count()
 	if err != nil {
 		return count, err

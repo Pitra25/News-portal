@@ -1,8 +1,6 @@
 package db
 
 import (
-	"News-portal/output"
-
 	"github.com/go-pg/pg/v10/orm"
 )
 
@@ -63,11 +61,18 @@ func filStatus(orm *orm.Query) *orm.Query {
 	return orm.Where(`"t"."statusId" = ?`, newsStatus)
 }
 
-func filters(orm *orm.Query) *orm.Query {
-	return filStatus(filPubAt(orm))
+func filters(orm *orm.Query, fil Filters) *orm.Query {
+	query := filStatus(filPubAt(orm))
+	if fil.News.CategoryId != 0 {
+		query.Where(`"t"."categoryId" = ?`, fil.News.CategoryId)
+	}
+	if fil.News.TagId != 0 {
+		query.Where(`? = ANY("t"."tagIds")`, fil.News.TagId)
+	}
+	return query
 }
 
-func removeDuper(news *output.News) *output.News {
+func removeDuper(news *News) *News {
 	seen := make(map[int]bool)
 	result := make([]int, 0)
 

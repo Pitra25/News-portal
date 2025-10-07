@@ -40,54 +40,6 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-func TestManager_GetALlShortNewsByFilters(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		args    Filters
-		want    int
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "t1",
-			args: Filters{
-				News: NewsFilters{
-					CategoryId: 2,
-					TagId:      1,
-				},
-			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "t2",
-			args: Filters{
-				News: NewsFilters{
-					CategoryId: 10,
-					TagId:      1,
-				},
-			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := &Manager{
-				db: connDB,
-			}
-			list, err := m.GetALlShortNewsByFilters(tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetALlShortNewsByFilters() error = %e, wantErr %v", err, tt.wantErr)) {
-				return
-			}
-
-			slog.Info("list", "len", len(list))
-
-			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
-		})
-	}
-}
-
 func TestManager_GetAllCategory(t *testing.T) {
 
 	m := &Manager{

@@ -38,7 +38,7 @@ func NewNewsArr(newsDB []newsportal.News) []News {
 	return news
 }
 
-func NewShortNewsArr(newsDB []newsportal.ShortNews) []ShortNews {
+func NewShortNews(newsDB []newsportal.News) []ShortNews {
 	var news []ShortNews
 	for _, v := range newsDB {
 		news = append(news, ShortNews{

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"News-portal/output"
 	"fmt"
 	"testing"
 
@@ -24,13 +23,13 @@ func TestTagRepo_GetByID(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    []int
-		want    []output.Tag
+		want    []Tag
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "test 1",
 			args: []int{1, 2, 10},
-			want: []output.Tag{
+			want: []Tag{
 				{ID: 1, Title: "Новости", StatusID: 1},
 				{ID: 2, Title: "Аналитика", StatusID: 1},
 				{ID: 10, Title: "Прогноз", StatusID: 1},
@@ -40,7 +39,7 @@ func TestTagRepo_GetByID(t *testing.T) {
 		{
 			name: "test 2",
 			args: []int{1, 6, 9},
-			want: []output.Tag{
+			want: []Tag{
 				{ID: 1, Title: "Новости", StatusID: 1},
 				{ID: 6, Title: "Обзор", StatusID: 1},
 				{ID: 9, Title: "Статистика", StatusID: 1},
@@ -50,7 +49,7 @@ func TestTagRepo_GetByID(t *testing.T) {
 		{
 			name: "test 3",
 			args: []int{1, 5, 9},
-			want: []output.Tag{
+			want: []Tag{
 				{ID: 1, Title: "Новости", StatusID: 1},
 				{ID: 5, Title: "Реportаж", StatusID: 1},
 				{ID: 9, Title: "Статистика", StatusID: 1},
@@ -60,7 +59,7 @@ func TestTagRepo_GetByID(t *testing.T) {
 		{
 			name: "test 4",
 			args: []int{1, 4, 5},
-			want: []output.Tag{
+			want: []Tag{
 				{ID: 1, Title: "Новости", StatusID: 1},
 				{ID: 4, Title: "Интервью", StatusID: 1},
 				{ID: 5, Title: "Реportаж", StatusID: 1},

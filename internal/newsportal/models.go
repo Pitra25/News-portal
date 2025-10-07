@@ -1,7 +1,7 @@
 package newsportal
 
 import (
-	"News-portal/output"
+	"News-portal/internal/db"
 	"time"
 )
 
@@ -47,15 +47,6 @@ type (
 		Tags        []Tag
 		PublishedAt time.Time
 	}
-
-	ShortNews struct {
-		NewsID      int
-		Title       string
-		PublishedAt time.Time
-		Category    Category
-		Tags        []Tag
-		TagIds      []int
-	}
 )
 
 func NewFilters(
@@ -75,7 +66,7 @@ func NewFilters(
 	}
 }
 
-func getTagsAndCategory(m *Manager, data []output.News) ([]Tag, []Category, map[int][]int, error) {
+func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []Category, map[int][]int, error) {
 
 	// Collecting IDs for requests
 	var (
@@ -108,10 +99,10 @@ func getTagsAndCategory(m *Manager, data []output.News) ([]Tag, []Category, map[
 		return tag, categories, tagIds, err
 	}
 
-	return NewTagArr(tagData), NewCategoryArr(categoriesDB), tagIds, nil
+	return NewTags(tagData), NewCategories(categoriesDB), tagIds, nil
 }
 
-func GetNewsMetadata(tagsArr []Tag, categoryArr []Category, v output.News) ([]Tag, Category) {
+func GetNewsMetadata(tagsArr []Tag, v db.News) []Tag {
 	// find an object with the necessary tags
 	var tags []Tag
 	for _, tag := range tagsArr {
@@ -122,14 +113,5 @@ func GetNewsMetadata(tagsArr []Tag, categoryArr []Category, v output.News) ([]Ta
 		}
 	}
 
-	// find an object with the desired category
-	var category Category
-	for _, cat := range categoryArr {
-		if cat.CategoryID == v.CategoryID {
-			category = cat
-			break
-		}
-	}
-
-	return tags, category
+	return tags
 }

@@ -2,17 +2,16 @@ package newsportal
 
 import (
 	"News-portal/internal/db"
-	"News-portal/output"
 )
 
-func NewCategory(c output.Category) Category {
+func NewCategory(c db.Category) Category {
 	return Category{
 		CategoryID: c.ID,
 		Title:      c.Title,
 	}
 }
 
-func NewCategoryArr(c []output.Category) []Category {
+func NewCategories(c []db.Category) []Category {
 	var result []Category
 	for _, v := range c {
 		result = append(result, NewCategory(v))
@@ -21,8 +20,7 @@ func NewCategoryArr(c []output.Category) []Category {
 }
 
 func NewNews(
-	newsDB output.News,
-	category Category,
+	newsDB db.News,
 	tags []Tag,
 ) News {
 	return News{
@@ -30,14 +28,14 @@ func NewNews(
 		Title:       newsDB.Title,
 		Content:     *newsDB.Content,
 		Author:      newsDB.Author,
-		Category:    category,
+		Category:    NewCategory(*newsDB.Category),
 		Tags:        tags,
 		TagIds:      newsDB.TagIDs,
 		PublishedAt: newsDB.PublishedAt,
 	}
 }
 
-func NewTagArr(tagDB []output.Tag) []Tag {
+func NewTags(tagDB []db.Tag) []Tag {
 	var tag []Tag
 	for _, v := range tagDB {
 		tag = append(tag, Tag{
@@ -46,29 +44,6 @@ func NewTagArr(tagDB []output.Tag) []Tag {
 		})
 	}
 	return tag
-}
-
-//func NewNewsArr(newsDB []db.News) []News {
-//	var news []News
-//	for _, v := range newsDB {
-//		news = append(news, NewNews(v))
-//	}
-//	return news
-//}
-
-func NewShortNewsArr(
-	newsDB output.News,
-	categoryDB Category,
-	tags []Tag,
-) ShortNews {
-	return ShortNews{
-		NewsID:      newsDB.ID,
-		Title:       newsDB.Title,
-		PublishedAt: newsDB.PublishedAt,
-		Category:    categoryDB,
-		TagIds:      newsDB.TagIDs,
-		Tags:        tags,
-	}
 }
 
 func (f *Filters) ToDB() db.Filters {

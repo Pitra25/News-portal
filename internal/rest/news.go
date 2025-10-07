@@ -56,7 +56,7 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 	}
 	filter := params.NewFilter()
 
-	shortNews, err := h.newsportal.GetALlShortNewsByFilters(filter)
+	shortNews, err := h.newsportal.GetNewsByFilters(filter)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -64,7 +64,7 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		NewShortNewsArr(shortNews),
+		NewShortNews(shortNews),
 	)
 }
 

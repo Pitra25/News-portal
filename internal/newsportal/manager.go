@@ -23,7 +23,7 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 	}
 
 	// collect everything in 1 news
-	tagsArr, categoryArr, _, err := getTagsAndCategory(m, newsDB)
+	tagsArr, _, _, err := getTagsAndCategory(m, newsDB)
 	if err != nil {
 		return nil, err
 	}
@@ -32,37 +32,10 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 	var result []News
 	for _, v := range newsDB {
 		// find an object with the necessary tags
-		tags, category := GetNewsMetadata(tagsArr, categoryArr, v)
+		tags := GetNewsMetadata(tagsArr, v)
 
 		// Collect everything in 1 news
-		result = append(result, NewNews(v, category, tags))
-	}
-
-	return result, nil
-}
-
-func (m *Manager) GetALlShortNewsByFilters(fil Filters) ([]ShortNews, error) {
-
-	filter := fil.ToDB()
-	newsDB, err := m.db.News.GetByFilters(filter)
-	if err != nil {
-		return nil, err
-	}
-
-	// creating arrays of id categories and news tags
-	tagsArr, categoryArr, _, err := getTagsAndCategory(m, newsDB)
-	if err != nil {
-		return nil, err
-	}
-
-	// collect everything in a news array
-	var result []ShortNews
-	for _, v := range newsDB {
-		// find an object with the necessary tags
-		tags, category := GetNewsMetadata(tagsArr, categoryArr, v)
-
-		// collect everything in 1 news item
-		result = append(result, NewShortNewsArr(v, category, tags))
+		result = append(result, NewNews(v, tags))
 	}
 
 	return result, nil
@@ -85,17 +58,10 @@ func (m *Manager) GetNewsById(id int) (News, error) {
 		return News{}, err
 	}
 
-	// getting the name of the news category
-	category, err := m.db.Categories.GetById([]int{data.CategoryID})
-	if err != nil {
-		return News{}, err
-	}
-
 	// collect everything in 1 news item
 	return NewNews(
 		data,
-		NewCategory(category[0]),
-		NewTagArr(tags),
+		NewTags(tags),
 	), nil
 
 }
@@ -111,7 +77,7 @@ func (m *Manager) GetAllTag() ([]Tag, error) {
 		return nil, err
 	}
 
-	return NewTagArr(tags), nil
+	return NewTags(tags), nil
 }
 
 func (m *Manager) GetAllCategory() ([]Category, error) {

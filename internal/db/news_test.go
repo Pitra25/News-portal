@@ -75,6 +75,36 @@ func TestNewsPG_GetAllByQuery(t *testing.T) {
 			want:    1,
 			wantErr: assert.NoError,
 		},
+		{
+			name: "Get all news by query (4)",
+			args: Filters{
+				NewsFilters{
+					CategoryId: 10,
+					TagId:      0,
+				},
+				PageFilters{
+					PageSize: 10,
+					Page:     1,
+				},
+			},
+			want:    2,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Get all news by query (4)",
+			args: Filters{
+				NewsFilters{
+					CategoryId: 0,
+					TagId:      1,
+				},
+				PageFilters{
+					PageSize: 10,
+					Page:     1,
+				},
+			},
+			want:    10,
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
