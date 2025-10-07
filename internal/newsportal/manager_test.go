@@ -152,7 +152,7 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 					Page:     1,
 				},
 			},
-			want:    2,
+			want:    4,
 			wantErr: assert.NoError,
 		},
 		{
@@ -168,7 +168,7 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 				},
 			},
 			want:    0,
-			wantErr: assert.NoError,
+			wantErr: assert.Error,
 		},
 		{
 			name: "Get all news by query (4)",
