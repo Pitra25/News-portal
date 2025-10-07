@@ -114,9 +114,11 @@ func getTagsAndCategory(m *Manager, data []output.News) ([]Tag, []Category, map[
 func GetNewsMetadata(tagsArr []Tag, categoryArr []Category, v output.News) ([]Tag, Category) {
 	// find an object with the necessary tags
 	var tags []Tag
-	for i, tag := range tagsArr {
-		if tag.TagID == v.TagIDs[i] {
-			tags = append(tags, tag)
+	for _, tag := range tagsArr {
+		for _, v := range v.TagIDs {
+			if tag.TagID == v {
+				tags = append(tags, tag)
+			}
 		}
 	}
 

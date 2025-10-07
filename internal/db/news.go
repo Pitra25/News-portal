@@ -23,12 +23,10 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]output.News, error) {
 		results       []output.News
 	)
 
-	if err := m.db.Model(&results).
+	if err := filters(m.db.Model(&results)).
 		Relation("Category.title").
 		Where(`? = ANY("t"."tagIds")`, fil.News.TagId).
 		Where(`"t"."categoryId" = ?`, fil.News.CategoryId).
-		Where(`"t"."statusId" = ?`, newsStatus).
-		Where(`"t"."publishedAt" <= now()`).
 		Limit(limit).Offset(offset).
 		Select(); err != nil {
 		return nil, err
@@ -55,8 +53,8 @@ func (m *NewsRepo) GetById(id int) (output.News, error) {
 func (m *NewsRepo) GetCount(filter Filters) (int, error) {
 
 	count, err := filters(m.db.Model((*output.News)(nil))).
-		Where(`"categoryId" = ?`, filter.News.CategoryId).
-		Where(`? = ANY("tagIds")`, filter.News.TagId).
+		Where(`"t"."categoryId" = ?`, filter.News.CategoryId).
+		Where(`? = ANY("t"."tagIds")`, filter.News.TagId).
 		Count()
 	if err != nil {
 		return count, err

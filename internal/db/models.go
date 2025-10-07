@@ -55,10 +55,16 @@ func NewFilters(
 	}
 }
 
-func filters(orm *orm.Query) *orm.Query {
-	return orm.Where(`"statusId" = ?`, newsStatus).
-		Where(`"publishedAt" <= now()`)
+func filPubAt(orm *orm.Query) *orm.Query {
+	return orm.Where(`"t"."publishedAt" <= now()`)
+}
 
+func filStatus(orm *orm.Query) *orm.Query {
+	return orm.Where(`"t"."statusId" = ?`, newsStatus)
+}
+
+func filters(orm *orm.Query) *orm.Query {
+	return filStatus(filPubAt(orm))
 }
 
 func removeDuper(news *output.News) *output.News {
