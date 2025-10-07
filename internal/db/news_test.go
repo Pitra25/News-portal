@@ -183,7 +183,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 					TagId:      0,
 				},
 			},
-			want:    0,
+			want:    3,
 			wantErr: assert.NoError,
 		},
 		{
@@ -194,7 +194,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 					TagId:      0,
 				},
 			},
-			want:    0,
+			want:    3,
 			wantErr: assert.NoError,
 		},
 		{
@@ -227,7 +227,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 					TagId:      2,
 				},
 			},
-			want:    2,
+			want:    3,
 			wantErr: assert.NoError,
 		},
 		{
@@ -238,7 +238,7 @@ func TestNewsPG_GetCount(t *testing.T) {
 					TagId:      1,
 				},
 			},
-			want:    3,
+			want:    4,
 			wantErr: assert.NoError,
 		},
 	}

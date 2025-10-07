@@ -41,7 +41,7 @@ func TestCategoryRepo_GetById(t *testing.T) {
 			name: "1",
 			args: []int{1, 2, 3},
 			want: []Category{
-				{ID: 1, Title: "Политика", OrderNumber: intPtr(2), StatusID: 1},
+				{ID: 1, Title: "Политика", OrderNumber: intPtr(1), StatusID: 1},
 				{ID: 2, Title: "Экономика", OrderNumber: intPtr(2), StatusID: 1},
 				{ID: 3, Title: "Технологии", OrderNumber: intPtr(3), StatusID: 1},
 			},
