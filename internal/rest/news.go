@@ -15,7 +15,7 @@ func (h *Router) GetAllNews(c *gin.Context) {
 	}
 	filter := params.NewFilter()
 
-	news, err := h.newsportal.GetNewsByFilters(filter)
+	news, err := h.manager.GetNewsByFilters(filter)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -36,7 +36,7 @@ func (h *Router) GetNewsById(c *gin.Context) {
 		return
 	}
 
-	news, err := h.newsportal.GetNewsById(newsId)
+	news, err := h.manager.GetNewsById(newsId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -56,7 +56,7 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 	}
 	filter := params.NewFilter()
 
-	shortNews, err := h.newsportal.GetNewsByFilters(filter)
+	shortNews, err := h.manager.GetNewsByFilters(filter)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -76,7 +76,7 @@ func (h *Router) GetNewsCount(c *gin.Context) {
 	}
 	filter := params.NewFilter()
 
-	count, err := h.newsportal.GetNewsCount(filter)
+	count, err := h.manager.GetNewsCount(filter)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

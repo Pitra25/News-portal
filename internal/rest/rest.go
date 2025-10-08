@@ -7,12 +7,12 @@ import (
 )
 
 type Router struct {
-	newsportal *newsportal.Manager
+	manager *newsportal.Manager
 }
 
-func NewRouter(newsportal *newsportal.Manager) *Router {
+func NewRouter(manager *newsportal.Manager) *Router {
 	return &Router{
-		newsportal: newsportal,
+		manager: manager,
 	}
 }
 

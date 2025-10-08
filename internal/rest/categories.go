@@ -8,7 +8,7 @@ import (
 
 func (h *Router) GetAllCategories(c *gin.Context) {
 
-	categories, err := h.newsportal.GetAllCategory()
+	categories, err := h.manager.GetAllCategory()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -16,6 +16,6 @@ func (h *Router) GetAllCategories(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		NewCategoryArr(categories),
+		NewCategories(categories),
 	)
 }

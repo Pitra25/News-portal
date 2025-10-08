@@ -23,7 +23,7 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 	}
 
 	// collect everything in 1 news
-	tagsArr, _, _, err := getTagsAndCategory(m, newsDB)
+	tags, err := getTags(m, newsDB)
 	if err != nil {
 		return nil, err
 	}
@@ -31,11 +31,11 @@ func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
 	// collect everything in a news array
 	var result []News
 	for _, v := range newsDB {
-		// find an object with the necessary tags
-		tags := GetNewsMetadata(tagsArr, v)
+		// find an object with the necessary metadata
+		metadata := GetNewsMetadata(tags, v)
 
 		// Collect everything in 1 news
-		result = append(result, NewNews(v, tags))
+		result = append(result, NewNews(v, metadata))
 	}
 
 	return result, nil
@@ -81,15 +81,10 @@ func (m *Manager) GetAllTag() ([]Tag, error) {
 }
 
 func (m *Manager) GetAllCategory() ([]Category, error) {
-	data, err := m.db.Categories.GetAll()
+	categories, err := m.db.Categories.GetAll()
 	if err != nil {
 		return nil, err
 	}
 
-	var result []Category
-	for _, v := range data {
-		result = append(result, NewCategory(v))
-	}
-
-	return result, nil
+	return NewCategories(categories), nil
 }

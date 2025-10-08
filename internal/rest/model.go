@@ -25,6 +25,7 @@ type (
 		CategoryID int    `json:"categoryId"`
 		Title      string `json:"title"`
 	}
+
 	News struct {
 		NewsID      int       `json:"newsId"`
 		Title       string    `json:"title"`

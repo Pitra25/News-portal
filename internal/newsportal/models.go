@@ -22,11 +22,6 @@ type (
 		Page PageFilters
 	}
 
-	Statuses struct {
-		StatusID int
-		Title    string
-	}
-
 	Tag struct {
 		TagID int
 		Title string
@@ -66,40 +61,25 @@ func NewFilters(
 	}
 }
 
-func getTagsAndCategory(m *Manager, data []db.News) ([]Tag, []Category, map[int][]int, error) {
-
+func getTags(m *Manager, news []db.News) ([]Tag, error) {
 	// Collecting IDs for requests
-	var (
-		tagIdsArr     []int
-		categoryIdArr []int
-	)
+	var tagIdsArr []int
 
 	tagIds := map[int][]int{}
-	for _, v := range data {
+	for _, v := range news {
 		tagIds[v.ID] = v.TagIDs
-		categoryIdArr = append(categoryIdArr, v.CategoryID)
 		for _, tagId := range v.TagIDs {
 			tagIdsArr = append(tagIdsArr, int(tagId))
 		}
 	}
 
 	// Getting the tags
-	var (
-		tag        []Tag
-		categories []Category
-	)
-	tagData, err := m.db.Tags.GetByID(tagIdsArr)
+	tags, err := m.db.Tags.GetByID(tagIdsArr)
 	if err != nil {
-		return tag, categories, tagIds, err
+		return nil, err
 	}
 
-	// We get the categories
-	categoriesDB, err := m.db.Categories.GetById(categoryIdArr)
-	if err != nil {
-		return tag, categories, tagIds, err
-	}
-
-	return NewTags(tagData), NewCategories(categoriesDB), tagIds, nil
+	return NewTags(tags), nil
 }
 
 func GetNewsMetadata(tagsArr []Tag, v db.News) []Tag {

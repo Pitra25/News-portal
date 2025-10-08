@@ -7,7 +7,7 @@ import (
 )
 
 func (h *Router) GetAllTags(c *gin.Context) {
-	tags, err := h.newsportal.GetAllTag()
+	tags, err := h.manager.GetAllTag()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

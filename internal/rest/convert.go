@@ -4,6 +4,18 @@ import (
 	"News-portal/internal/newsportal"
 )
 
+func NewNews(v newsportal.News) News {
+	return News{
+		NewsID:      v.NewsID,
+		Title:       v.Title,
+		Content:     v.Content,
+		Author:      v.Author,
+		Category:    NewCategory(v.Category),
+		Tags:        NewTag(v.Tags),
+		PublishedAt: v.PublishedAt,
+	}
+}
+
 func NewCategory(c newsportal.Category) Category {
 	return Category{
 		CategoryID: c.CategoryID,
@@ -11,7 +23,7 @@ func NewCategory(c newsportal.Category) Category {
 	}
 }
 
-func NewCategoryArr(c []newsportal.Category) []Category {
+func NewCategories(c []newsportal.Category) []Category {
 	var result []Category
 	for _, v := range c {
 		result = append(result, NewCategory(v))
@@ -50,16 +62,4 @@ func NewShortNews(newsDB []newsportal.News) []ShortNews {
 		})
 	}
 	return news
-}
-
-func NewNews(v newsportal.News) News {
-	return News{
-		NewsID:      v.NewsID,
-		Title:       v.Title,
-		Content:     v.Content,
-		Author:      v.Author,
-		Category:    NewCategory(v.Category),
-		Tags:        NewTag(v.Tags),
-		PublishedAt: v.PublishedAt,
-	}
 }

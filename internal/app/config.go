@@ -25,7 +25,7 @@ func Load(path string) (*Config, error) {
 	var conf Config
 
 	if _, err := toml.DecodeFile(path, &conf); err != nil {
-		return nil, fmt.Errorf("failed to load Config: %w", err)
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
 	return &conf, nil
