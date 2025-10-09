@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/joho/godotenv"
+	"github.com/BurntSushi/toml"
 )
 
 var conFlag = flag.String("config", "./config/config.toml", "config file path")
@@ -18,15 +18,9 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	if err := godotenv.Load(); err != nil {
-		slog.Error("fail loading env", "err", err)
-		return
-	}
-
-	cfg, err := app.Load(*conFlag)
-	if err != nil {
-		slog.Error("fail load config", "err", err)
-		return
+	var cfg *app.Config
+	if _, err := toml.DecodeFile(*conFlag, &cfg); err != nil {
+		slog.Error("failed to load config", "err", err)
 	}
 
 	conn, err := db.Connect(&cfg.Database)

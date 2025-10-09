@@ -1,27 +1,30 @@
 package db
 
 import (
+	"context"
+
 	"github.com/go-pg/pg/v10"
 )
 
-type NewsRepo struct {
+type Repo struct {
 	db *pg.DB
 }
 
-func NewNews(db *pg.DB) *NewsRepo {
-	return &NewsRepo{
+func NewRepo(db *pg.DB) *Repo {
+	return &Repo{
 		db: db,
 	}
 }
 
-func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
+func (m *Repo) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
 	// formation of restrictions
 	var (
 		limit, offset = fil.Page.paginator()
 		results       []News
 	)
 
-	if err := filters(m.db.Model(&results), fil).
+	q := m.db.ModelContext(ctx, &results)
+	if err := filters(q, fil).
 		Relation("Category").
 		Limit(limit).Offset(offset).
 		Select(); err != nil {
@@ -34,26 +37,57 @@ func (m *NewsRepo) GetByFilters(fil Filters) ([]News, error) {
 	return results, nil
 }
 
-func (m *NewsRepo) GetById(id int) (News, error) {
+func (m *Repo) GetNewsById(ctx context.Context, id int) (News, error) {
 
 	result := News{ID: id}
-	if err := filters(m.db.Model(&result), Filters{}).
+
+	q := m.db.ModelContext(ctx, &result)
+	err := filters(q, Filters{}).
 		Relation("Category").
 		WherePK().
-		Select(); err != nil {
-		return result, err
-	}
+		Select()
 
-	return result, nil
+	return result, err
 }
 
-func (m *NewsRepo) GetCount(filter Filters) (int, error) {
+func (m *Repo) GetNewsCount(ctx context.Context, filter Filters) (int, error) {
 
-	count, err := filters(m.db.Model((*News)(nil)), filter).
-		Count()
-	if err != nil {
-		return count, err
+	q := m.db.ModelContext(ctx, (*News)(nil))
+	count, err := filters(q, filter).Count()
+
+	return count, err
+}
+
+func (m *Repo) GetListCategories(ctx context.Context) ([]Category, error) {
+	var list []Category
+
+	q := m.db.ModelContext(ctx, &list)
+	err := setQueryFilters(q).Select()
+
+	return list, err
+}
+
+func (m *Repo) GetTagsList(ctx context.Context) ([]Tag, error) {
+	var list []Tag
+
+	q := m.db.ModelContext(ctx, &list)
+	err := setQueryFilters(q).Select()
+
+	return list, err
+}
+
+func (m *Repo) GetTagByID(ctx context.Context, ids []int) ([]Tag, error) {
+
+	if len(ids) == 0 {
+		return nil, nil
 	}
 
-	return count, nil
+	var list []Tag
+	if err := setQueryFilters(m.db.ModelContext(ctx, &list)).
+		Where(`"t"."tagId" IN (?)`, pg.In(ids)).
+		Select(); err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }

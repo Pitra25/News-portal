@@ -57,12 +57,12 @@ func filPubAt(orm *orm.Query) *orm.Query {
 	return orm.Where(`"t"."publishedAt" <= now()`)
 }
 
-func filStatus(orm *orm.Query) *orm.Query {
+func setQueryFilters(orm *orm.Query) *orm.Query {
 	return orm.Where(`"t"."statusId" = ?`, newsStatus)
 }
 
 func filters(orm *orm.Query, fil Filters) *orm.Query {
-	query := filStatus(filPubAt(orm))
+	query := setQueryFilters(filPubAt(orm))
 	if fil.News.CategoryId != 0 {
 		query.Where(`"t"."categoryId" = ?`, fil.News.CategoryId)
 	}

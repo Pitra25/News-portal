@@ -9,17 +9,11 @@ import (
 )
 
 type DB struct {
-	News       *NewsRepo
-	Tags       *TagRepo
-	Categories *CategoryRepo
+	Repo *Repo
 }
 
 func NewDB(db *pg.DB) *DB {
-	return &DB{
-		News:       NewNews(db),
-		Tags:       NewTags(db),
-		Categories: NewCategory(db),
-	}
+	return &DB{Repo: NewRepo(db)}
 }
 
 func Connect(opt *pg.Options) (*pg.DB, error) {
@@ -31,7 +25,7 @@ func Connect(opt *pg.Options) (*pg.DB, error) {
 	}
 
 	db.AddQueryHook(pgdebug.DebugHook{
-		Verbose: true,
+		Verbose: false,
 	})
 
 	return db, nil

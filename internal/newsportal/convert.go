@@ -4,52 +4,69 @@ import (
 	"News-portal/internal/db"
 )
 
-func NewCategory(c db.Category) Category {
-	return Category{
-		CategoryID: c.ID,
-		Title:      c.Title,
+func NewCategory(in db.Category) *Category {
+	return &Category{
+		Category: in,
 	}
 }
 
-func NewCategories(c []db.Category) []Category {
+func NewCategories(list []db.Category) []Category {
+	if list == nil {
+		return nil
+	}
 	var result []Category
-	for _, v := range c {
-		result = append(result, NewCategory(v))
+	for _, v := range list {
+		result = append(result, *NewCategory(v))
 	}
 	return result
 }
 
-func NewNews(
-	newsDB db.News,
-	tags []Tag,
-) News {
-	return News{
-		NewsID:      newsDB.ID,
-		Title:       newsDB.Title,
-		Content:     *newsDB.Content,
-		Author:      newsDB.Author,
-		Category:    NewCategory(*newsDB.Category),
-		Tags:        tags,
-		TagIds:      newsDB.TagIDs,
-		PublishedAt: newsDB.PublishedAt,
+func NewNewsList(list []db.News) NewsList {
+	if list == nil {
+		return nil
+	}
+	var results []News
+	for _, item := range list {
+		n := NewNews(&item)
+		if n == nil {
+			break
+		}
+		results = append(results, *n)
+	}
+	return results
+}
+
+func NewNews(in *db.News) *News {
+	if in.Category == nil || in.ID == 0 {
+		return nil
+	}
+	return &News{
+		News:     *in,
+		Category: *NewCategory(*in.Category),
 	}
 }
 
-func NewTags(tagDB []db.Tag) []Tag {
+func NewTags(list []db.Tag) Tags {
+	if len(list) == 0 {
+		return nil
+	}
 	var tag []Tag
-	for _, v := range tagDB {
-		tag = append(tag, Tag{
-			TagID: v.ID,
-			Title: v.Title,
-		})
+	for _, v := range list {
+		tag = append(tag, NewTag(v))
 	}
 	return tag
 }
 
+func NewTag(in db.Tag) Tag {
+	if in.ID == 0 {
+		return Tag{}
+	}
+	return Tag{Tag: in}
+}
+
 func (f *Filters) ToDB() db.Filters {
-	filter := db.NewFilters(
+	return db.NewFilters(
 		f.News.NewsId, f.News.CategoryId, f.News.TagId,
 		f.Page.PageSize, f.Page.Page,
 	)
-	return filter
 }

@@ -2,6 +2,9 @@ package newsportal
 
 import (
 	"News-portal/internal/db"
+	"fmt"
+
+	"golang.org/x/net/context"
 )
 
 type Manager struct {
@@ -14,77 +17,62 @@ func NewManager(db *db.DB) *Manager {
 	}
 }
 
-func (m *Manager) GetNewsByFilters(fil Filters) ([]News, error) {
+func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
 
-	filter := fil.ToDB()
-	newsDB, err := m.db.News.GetByFilters(filter)
+	dbNews, err := m.db.Repo.GetNewsByFilters(ctx, fil.ToDB())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("news fetch failed: %w", err)
 	}
+	result := NewNewsList(dbNews)
 
 	// collect everything in 1 news
-	tags, err := getTags(m, newsDB)
+	tags, err := m.GetTagsByID(ctx, result.UniqueTagIDs())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("tags fetch failed: %w", err)
 	}
 
-	// collect everything in a news array
-	var result []News
-	for _, v := range newsDB {
-		// find an object with the necessary metadata
-		metadata := GetNewsMetadata(tags, v)
-
-		// Collect everything in 1 news
-		result = append(result, NewNews(v, metadata))
-	}
+	//collect everything in a news array
+	result.SetTags(tags)
 
 	return result, nil
 }
 
-func (m *Manager) GetNewsById(id int) (News, error) {
+func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 	// receiving news by ID
-	data, err := m.db.News.GetById(id)
+	newsList, err := m.db.Repo.GetNewsById(ctx, id)
 	if err != nil {
-		return News{}, err
+		return nil, fmt.Errorf("news fetch failed: %w", err)
 	}
 
-	// Get the name of the news tags
-	var tagIds []int
-	for _, v := range data.TagIDs {
-		tagIds = append(tagIds, int(v))
-	}
-	tags, err := m.db.Tags.GetByID(tagIds)
+	tags, err := m.GetTagsByID(ctx, newsList.TagIDs)
 	if err != nil {
-		return News{}, err
+		return nil, fmt.Errorf("tags fetch failed: %w", err)
 	}
 
-	// collect everything in 1 news item
-	return NewNews(
-		data,
-		NewTags(tags),
-	), nil
+	result := NewNews(&newsList)
+	if result == nil {
+		return nil, nil
+	}
+	result.Tags = tags
 
+	return result, nil
 }
 
-func (m *Manager) GetNewsCount(fil Filters) (int, error) {
-	filter := fil.ToDB()
-	return m.db.News.GetCount(filter)
+func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
+	tags, err := m.db.Repo.GetTagByID(ctx, ids)
+	return NewTags(tags), err
 }
 
-func (m *Manager) GetAllTag() ([]Tag, error) {
-	tags, err := m.db.Tags.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewTags(tags), nil
+func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
+	return m.db.Repo.GetNewsCount(ctx, fil.ToDB())
 }
 
-func (m *Manager) GetAllCategory() ([]Category, error) {
-	categories, err := m.db.Categories.GetAll()
-	if err != nil {
-		return nil, err
-	}
+func (m *Manager) GetAllTag(ctx context.Context) ([]Tag, error) {
+	tags, err := m.db.Repo.GetTagsList(ctx)
+	return NewTags(tags), err
+}
 
-	return NewCategories(categories), nil
+func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
+	categories, err := m.db.Repo.GetListCategories(ctx)
+	return NewCategories(categories), err
 }

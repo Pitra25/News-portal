@@ -8,4 +8,6 @@ ShutdownTimeout = "10s"
 [Database]
 Host = "localhost"
 Port = "5432"
-DBName = "postgres"
+Database = "postgres"
+User = "postgres"
+Password = "postgres"

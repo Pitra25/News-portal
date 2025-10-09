@@ -6,17 +6,32 @@ import (
 	"News-portal/internal/rest"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-pg/pg/v10"
 )
 
-type App struct {
-	cfg *Config
-	db  *pg.DB
-	srv *http.Server
-}
+type (
+	App struct {
+		cfg *Config
+		db  *pg.DB
+		srv *http.Server
+	}
+
+	Config struct {
+		Server struct {
+			Host            string
+			Port            string
+			ReadTimeout     time.Duration
+			WriteTimeout    time.Duration
+			ShutdownTimeout time.Duration
+		}
+		Database pg.Options
+	}
+)
 
 func New(cfg *Config, dbInit *pg.DB) *App {
 
@@ -25,7 +40,7 @@ func New(cfg *Config, dbInit *pg.DB) *App {
 	router := rest.NewRouter(manager)
 
 	srv := &http.Server{
-		Addr:         cfg.Server.ServerAddress(),
+		Addr:         cfg.Server.Host + ":" + cfg.Server.Port,
 		Handler:      router.InitRoutes(),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
@@ -52,11 +67,12 @@ func (a *App) Shutdown() error {
 	defer cancel()
 
 	if err := a.srv.Shutdown(ctx); err != nil {
-		slog.Error("forced shutdown", "err", err.Error())
+		return fmt.Errorf("fail to shutdown server: %w", err)
 	}
 
 	if err := a.db.Close(); err != nil {
-		slog.Error("database connection close failed", "err", err.Error())
+		return fmt.Errorf("fail to close database: %w", err)
 	}
+
 	return nil
 }

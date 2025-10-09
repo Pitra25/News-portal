@@ -2,7 +2,6 @@ package newsportal
 
 import (
 	"News-portal/internal/db"
-	"time"
 )
 
 type (
@@ -22,25 +21,14 @@ type (
 		Page PageFilters
 	}
 
-	Tag struct {
-		TagID int
-		Title string
-	}
+	Tag struct{ db.Tag }
 
-	Category struct {
-		CategoryID int
-		Title      string
-	}
+	Category struct{ db.Category }
 
 	News struct {
-		NewsID      int
-		Title       string
-		Content     string
-		Author      string
-		Category    Category
-		TagIds      []int
-		Tags        []Tag
-		PublishedAt time.Time
+		db.News
+		Category Category
+		Tags     []Tag
 	}
 )
 
@@ -59,39 +47,4 @@ func NewFilters(
 			Page:     page,
 		},
 	}
-}
-
-func getTags(m *Manager, news []db.News) ([]Tag, error) {
-	// Collecting IDs for requests
-	var tagIdsArr []int
-
-	tagIds := map[int][]int{}
-	for _, v := range news {
-		tagIds[v.ID] = v.TagIDs
-		for _, tagId := range v.TagIDs {
-			tagIdsArr = append(tagIdsArr, int(tagId))
-		}
-	}
-
-	// Getting the tags
-	tags, err := m.db.Tags.GetByID(tagIdsArr)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewTags(tags), nil
-}
-
-func GetNewsMetadata(tagsArr []Tag, v db.News) []Tag {
-	// find an object with the necessary tags
-	var tags []Tag
-	for _, tag := range tagsArr {
-		for _, v := range v.TagIDs {
-			if tag.TagID == v {
-				tags = append(tags, tag)
-			}
-		}
-	}
-
-	return tags
 }

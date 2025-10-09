@@ -20,29 +20,20 @@ func (h *Router) InitRoutes() *gin.Engine {
 	router := gin.New()
 
 	api := router.Group("/api")
-	{
-		news := api.Group("/news")
-		{
-			news.GET("/", h.GetAllNews)
-			news.GET("/short", h.GetAllShortNews)
-			news.GET("/:id", h.GetNewsById)
 
-			count := news.Group("/count")
-			{
-				count.GET("/", h.GetNewsCount)
-			}
-		}
+	news := api.Group("/news")
+	news.GET("/", h.GetAllNews)
+	news.GET("/short", h.GetAllShortNews)
+	news.GET("/:id", h.GetNewsById)
 
-		tags := api.Group("/tags")
-		{
-			tags.GET("/", h.GetAllTags)
-		}
+	count := news.Group("/count")
+	count.GET("/", h.GetNewsCount)
 
-		categories := api.Group("/categories")
-		{
-			categories.GET("/", h.GetAllCategories)
-		}
-	}
+	tags := api.Group("/tags")
+	tags.GET("/", h.GetAllTags)
+
+	categories := api.Group("/categories")
+	categories.GET("/", h.GetAllCategories)
 
 	return router
 }

@@ -17,27 +17,27 @@ type (
 	}
 
 	Tag struct {
-		TagID int    `json:"tagId"`
+		ID    int    `json:"tagID"`
 		Title string `json:"title"`
 	}
 
 	Category struct {
-		CategoryID int    `json:"categoryId"`
-		Title      string `json:"title"`
+		ID    int    `json:"categoryId"`
+		Title string `json:"title"`
 	}
 
 	News struct {
-		NewsID      int       `json:"newsId"`
+		ID          int       `json:"newsID"`
 		Title       string    `json:"title"`
-		Content     string    `json:"content"`
+		Content     *string   `json:"content"`
 		Author      string    `json:"author"`
 		Category    Category  `json:"category"`
 		Tags        []Tag     `json:"tagIds"`
 		PublishedAt time.Time `json:"publishedAt"`
 	}
 
-	ShortNews struct {
-		NewsID      int       `json:"newsId"`
+	NewsSummary struct {
+		ID          int       `json:"newsSummaryID"`
 		Title       string    `json:"title"`
 		PublishedAt time.Time `json:"publishedAt"`
 		Category    Category  `json:"category"`
@@ -50,13 +50,12 @@ type (
 )
 
 func (q *queryParams) NewFilter() newsportal.Filters {
-	filter := newsportal.NewFilters(
+	return newsportal.NewFilters(
 		q.NewsId, q.CategoryId, q.TagId,
 		q.PageSize, q.Page,
 	)
-	return filter
 }
 
-func newErrorResponse(c *gin.Context, statusCode int, message string) {
-	c.AbortWithStatusJSON(statusCode, errorResponse{message})
+func newErrorResponse(c *gin.Context, statusCode int, err error) {
+	c.AbortWithStatusJSON(statusCode, errorResponse{err.Error()})
 }

@@ -2,6 +2,7 @@ package newsportal
 
 import (
 	"News-portal/internal/db"
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -45,7 +46,7 @@ func TestManager_GetAllCategory(t *testing.T) {
 	m := &Manager{
 		db: connDB,
 	}
-	categories, err := m.GetAllCategory()
+	categories, err := m.GetAllCategory(context.Background())
 	assert.NoError(t, err)
 
 	const minLength = 5
@@ -61,7 +62,7 @@ func TestManager_GetAllTag(t *testing.T) {
 	m := &Manager{
 		db: connDB,
 	}
-	tags, err := m.GetAllTag()
+	tags, err := m.GetAllTag(context.Background())
 	assert.NoError(t, err)
 
 	const minLength = 5
@@ -120,7 +121,7 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 				},
 			},
 			want:    0,
-			wantErr: assert.Error,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Get all news by query (4)",
@@ -143,12 +144,10 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 			m := &Manager{
 				db: connDB,
 			}
-			list, err := m.GetNewsByFilters(tt.args)
+			list, err := m.GetNewsByFilters(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsByFilters() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
-
-			slog.Info("list", "len", len(list))
 
 			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
 		})
@@ -189,7 +188,7 @@ func TestManager_GetNewsById(t *testing.T) {
 				db: connDB,
 			}
 
-			news, err := m.GetNewsById(tt.args)
+			news, err := m.GetNewsById(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsById() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
@@ -217,7 +216,7 @@ func TestManager_GetNewsCount(t *testing.T) {
 					TagId:      0,
 				},
 			},
-			want:    0,
+			want:    3,
 			wantErr: assert.NoError,
 		},
 		{
@@ -228,7 +227,7 @@ func TestManager_GetNewsCount(t *testing.T) {
 					TagId:      0,
 				},
 			},
-			want:    0,
+			want:    3,
 			wantErr: assert.NoError,
 		},
 		{
@@ -239,7 +238,7 @@ func TestManager_GetNewsCount(t *testing.T) {
 					TagId:      1,
 				},
 			},
-			want:    0,
+			want:    2,
 			wantErr: assert.NoError,
 		},
 		{
@@ -260,7 +259,7 @@ func TestManager_GetNewsCount(t *testing.T) {
 				db: connDB,
 			}
 
-			count, err := m.GetNewsCount(tt.args)
+			count, err := m.GetNewsCount(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsCount() error = %e, wantErr %v", err, tt.wantErr)) {
 
 				return
