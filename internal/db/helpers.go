@@ -55,20 +55,35 @@ func NewFilters(
 }
 
 func filPubAt(orm *orm.Query) *orm.Query {
-	return orm.Where(`"t".? <= now()`, pg.Ident(Columns.News.PublishedAt))
+	return orm.Where(
+		`"t".? <= now()`,
+		pg.Ident(Columns.News.PublishedAt),
+	)
 }
 
 func setQueryFilters(orm *orm.Query) *orm.Query {
-	return orm.Where(`"t".? = ?`, pg.Ident(Columns.News.StatusID), newsStatus)
+	return orm.Where(
+		`"t".? = ?`,
+		pg.Ident(Columns.News.StatusID),
+		newsStatus,
+	)
 }
 
 func filters(orm *orm.Query, fil Filters) *orm.Query {
 	query := setQueryFilters(filPubAt(orm))
 	if fil.News.CategoryId != 0 {
-		query.Where(`"t".? = ?`, pg.Ident(Columns.News.CategoryID), fil.News.CategoryId)
+		query.Where(
+			`"t".? = ?`,
+			pg.Ident(Columns.News.CategoryID),
+			fil.News.CategoryId,
+		)
 	}
 	if fil.News.TagId != 0 {
-		query.Where(`? = ANY("t".?)`, fil.News.TagId, pg.Ident(Columns.News.TagIDs))
+		query.Where(
+			`? = ANY("t".?)`,
+			fil.News.TagId,
+			pg.Ident(Columns.News.TagIDs),
+		)
 	}
 	return query
 }

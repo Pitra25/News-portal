@@ -18,7 +18,6 @@ func NewManager(db *db.DB) *Manager {
 }
 
 func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
-
 	dbNews, err := m.db.Repo.GetNewsByFilters(ctx, fil.ToDB())
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
@@ -43,28 +42,16 @@ func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
 	}
+	result := NewNews(news)
 
-	tags, err := m.GetTagsByID(ctx, news.TagIDs)
+	tags, err := m.GetTagsByID(ctx, result.TagIDs)
 	if err != nil {
 		return nil, fmt.Errorf("tags fetch failed: %w", err)
 	}
 
-	result := NewNews(news)
-	if result == nil {
-		return nil, nil
-	}
 	result.Tags = tags
 
 	return result, nil
-}
-
-func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
-	tags, err := m.db.Repo.GetTagByID(ctx, ids)
-	return NewTags(tags), err
-}
-
-func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
-	return m.db.Repo.GetNewsCount(ctx, fil.ToDB())
 }
 
 func (m *Manager) GetAllTag(ctx context.Context) ([]Tag, error) {
@@ -72,7 +59,16 @@ func (m *Manager) GetAllTag(ctx context.Context) ([]Tag, error) {
 	return NewTags(tags), err
 }
 
+func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
+	tags, err := m.db.Repo.GetTagByID(ctx, ids)
+	return NewTags(tags), err
+}
+
 func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
 	categories, err := m.db.Repo.GetListCategories(ctx)
 	return NewCategories(categories), err
+}
+
+func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
+	return m.db.Repo.GetNewsCount(ctx, fil.ToDB())
 }
