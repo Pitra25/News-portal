@@ -27,7 +27,7 @@ type (
 
 	News struct {
 		db.News
-		Category Category
+		Category *Category
 		Tags     []Tag
 	}
 )

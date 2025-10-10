@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -34,8 +33,7 @@ type (
 )
 
 func New(cfg *Config, dbInit *pg.DB) *App {
-
-	conn := db.NewDB(dbInit)
+	conn := db.New(dbInit)
 	manager := newsportal.NewManager(conn)
 	router := rest.NewRouter(manager)
 
@@ -54,11 +52,9 @@ func New(cfg *Config, dbInit *pg.DB) *App {
 }
 
 func (a *App) Run() error {
-
 	if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		slog.Error("fail start server", "err", err.Error())
+		return err
 	}
-
 	return nil
 }
 

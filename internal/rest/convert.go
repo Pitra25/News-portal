@@ -4,6 +4,8 @@ import (
 	"News-portal/internal/newsportal"
 )
 
+//go:generate colgen
+
 func NewCategories(c []newsportal.Category) []Category {
 	if len(c) == 0 {
 		return nil
@@ -11,17 +13,17 @@ func NewCategories(c []newsportal.Category) []Category {
 
 	var result []Category
 	for _, v := range c {
-		result = append(result, NewCategory(v))
+		result = append(result, *NewCategory(&v))
 	}
 	return result
 }
 
-func NewCategory(c newsportal.Category) Category {
+func NewCategory(c *newsportal.Category) *Category {
 	if c.ID == 0 {
-		return Category{}
+		return nil
 	}
 
-	return Category{
+	return &Category{
 		ID:    c.ID,
 		Title: c.Title,
 	}
@@ -34,17 +36,17 @@ func NewTags(list []newsportal.Tag) []Tag {
 
 	var tag []Tag
 	for _, v := range list {
-		tag = append(tag, NewTag(&v))
+		tag = append(tag, *NewTag(&v))
 	}
 	return tag
 }
 
-func NewTag(in *newsportal.Tag) Tag {
+func NewTag(in *newsportal.Tag) *Tag {
 	if in == nil {
-		return Tag{}
+		return nil
 	}
 
-	return Tag{
+	return &Tag{
 		ID:    in.ID,
 		Title: in.Title,
 	}
@@ -56,16 +58,16 @@ func NewNewsList(list []newsportal.News) []News {
 	}
 	var news []News
 	for _, v := range list {
-		news = append(news, NewNews(&v))
+		news = append(news, *NewNews(&v))
 	}
 	return news
 }
 
-func NewNews(in *newsportal.News) News {
+func NewNews(in *newsportal.News) *News {
 	if in == nil {
-		return News{}
+		return nil
 	}
-	return News{
+	return &News{
 		ID:          in.ID,
 		Title:       in.Title,
 		Author:      in.Author,
@@ -82,16 +84,16 @@ func NewNewsSummaries(list []newsportal.News) []NewsSummary {
 	}
 	var news []NewsSummary
 	for _, v := range list {
-		news = append(news, NewNewsSummary(&v))
+		news = append(news, *NewNewsSummary(&v))
 	}
 	return news
 }
 
-func NewNewsSummary(in *newsportal.News) NewsSummary {
+func NewNewsSummary(in *newsportal.News) *NewsSummary {
 	if in == nil {
-		return NewsSummary{}
+		return nil
 	}
-	return NewsSummary{
+	return &NewsSummary{
 		ID:          in.ID,
 		Title:       in.Title,
 		PublishedAt: in.PublishedAt,

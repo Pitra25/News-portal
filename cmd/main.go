@@ -39,11 +39,12 @@ func main() {
 			slog.Error("fail run app", "err", err)
 			return
 		}
+		quit <- syscall.SIGTERM
 	}()
 
 	<-quit
 
-	if err := application.Shutdown(); err != nil {
+	if err = application.Shutdown(); err != nil {
 		slog.Error("fail shutdown app", "err", err)
 	}
 }

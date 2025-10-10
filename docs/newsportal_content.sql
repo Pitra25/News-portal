@@ -1,5 +1,5 @@
 INSERT
-INTO statuses ("title")
+INTO "statuses" ("title")
 VALUES
    ('Опубликовано'),
    ('Не опубликовано'),
@@ -14,7 +14,7 @@ VALUES
    ('Завершено');
 
 INSERT
-INTO categories ("title", "orderNumber", "statusId")
+INTO "categories" ("title", "orderNumber", "statusId")
 VALUES
     ('Политика', 1, 1),
     ('Экономика', 2, 1),
@@ -28,7 +28,7 @@ VALUES
     ('Авто', 10, 1);
 
 INSERT
-INTO tags ("title", "statusId")
+INTO "tags" ("title", "statusId")
 VALUES
    ('Новости', 1),
    ('Аналитика', 1),
@@ -42,7 +42,7 @@ VALUES
    ('Прогноз', 1);
 
 INSERT
-INTO news ("title", "content", "author", "categoryId", "tagIds", "publishedAt", "statusId")
+INTO "news" ("title", "content", "author", "categoryId", "tagIds", "publishedAt", "statusId")
 VALUES
     ('Новые экономические реформы', 'Правительство объявило о новых мерах поддержки бизнеса...', 'Иван Петров', 2, ARRAY[1,2,10], '2025-10-1 12:00:00+03', 1),
     ('Прорыв в области искусственного интеллекта', 'Ученые разработали новую модель ИИ...', 'Мария Сидорова', 3, ARRAY[1,6,9], '2024-09-25 09:00:00+03', 2),

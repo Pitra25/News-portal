@@ -39,17 +39,17 @@ func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, er
 
 func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 	// receiving news by ID
-	newsList, err := m.db.Repo.GetNewsById(ctx, id)
+	news, err := m.db.Repo.GetNewsById(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
 	}
 
-	tags, err := m.GetTagsByID(ctx, newsList.TagIDs)
+	tags, err := m.GetTagsByID(ctx, news.TagIDs)
 	if err != nil {
 		return nil, fmt.Errorf("tags fetch failed: %w", err)
 	}
 
-	result := NewNews(&newsList)
+	result := NewNews(news)
 	if result == nil {
 		return nil, nil
 	}

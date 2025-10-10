@@ -12,7 +12,7 @@ type DB struct {
 	Repo *Repo
 }
 
-func NewDB(db *pg.DB) *DB {
+func New(db *pg.DB) *DB {
 	return &DB{Repo: NewRepo(db)}
 }
 
@@ -25,7 +25,7 @@ func Connect(opt *pg.Options) (*pg.DB, error) {
 	}
 
 	db.AddQueryHook(pgdebug.DebugHook{
-		Verbose: false,
+		Verbose: true,
 	})
 
 	return db, nil

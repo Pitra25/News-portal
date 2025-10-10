@@ -47,10 +47,7 @@ func (h *Router) GetNewsById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		NewNews(news),
-	)
+	c.JSON(http.StatusOK, NewNews(news))
 }
 
 func (h *Router) GetAllShortNews(c *gin.Context) {
@@ -71,10 +68,7 @@ func (h *Router) GetAllShortNews(c *gin.Context) {
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		NewNewsSummaries(list),
-	)
+	c.JSON(http.StatusOK, NewNewsSummaries(list))
 }
 
 func (h *Router) GetNewsCount(c *gin.Context) {
@@ -90,24 +84,17 @@ func (h *Router) GetNewsCount(c *gin.Context) {
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		count,
-	)
+	c.JSON(http.StatusOK, count)
 }
 
 func (h *Router) GetAllCategories(c *gin.Context) {
-
 	categories, err := h.manager.GetAllCategory(c.Request.Context())
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		NewCategories(categories),
-	)
+	c.JSON(http.StatusOK, NewCategories(categories))
 }
 
 func (h *Router) GetAllTags(c *gin.Context) {
@@ -117,8 +104,5 @@ func (h *Router) GetAllTags(c *gin.Context) {
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		NewTags(tags),
-	)
+	c.JSON(http.StatusOK, NewTags(tags))
 }

@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	connDB = db.NewDB(conn)
+	connDB = db.New(conn)
 
 	exitCode := m.Run()
 	os.Exit(exitCode)

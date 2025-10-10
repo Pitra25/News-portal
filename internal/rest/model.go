@@ -31,7 +31,7 @@ type (
 		Title       string    `json:"title"`
 		Content     *string   `json:"content"`
 		Author      string    `json:"author"`
-		Category    Category  `json:"category"`
+		Category    *Category `json:"category"`
 		Tags        []Tag     `json:"tagIds"`
 		PublishedAt time.Time `json:"publishedAt"`
 	}
@@ -40,7 +40,7 @@ type (
 		ID          int       `json:"newsSummaryID"`
 		Title       string    `json:"title"`
 		PublishedAt time.Time `json:"publishedAt"`
-		Category    Category  `json:"category"`
+		Category    *Category `json:"category"`
 		TagIds      []Tag     `json:"tagIds"`
 	}
 
