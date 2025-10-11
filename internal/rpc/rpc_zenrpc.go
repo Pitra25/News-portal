@@ -11,34 +11,26 @@ import (
 )
 
 var RPC = struct {
-	NewsService       struct{ GetAllNews, GetNewsById, GetNewsCount string }
-	ShortNewsService  struct{ GetAllShortNews string }
-	TagsService       struct{ GetAllTags string }
-	CategoriesService struct{ GetAllCategories string }
+	Service struct{ GetAllNews, GetNewsById, GetNewsCount, GetAllShortNews, GetAllCategories, GetAllTags string }
 }{
-	NewsService: struct{ GetAllNews, GetNewsById, GetNewsCount string }{
-		GetAllNews:   "getallnews",
-		GetNewsById:  "getnewsbyid",
-		GetNewsCount: "getnewscount",
-	},
-	ShortNewsService: struct{ GetAllShortNews string }{
-		GetAllShortNews: "getallshortnews",
-	},
-	TagsService: struct{ GetAllTags string }{
-		GetAllTags: "getalltags",
-	},
-	CategoriesService: struct{ GetAllCategories string }{
+	Service: struct{ GetAllNews, GetNewsById, GetNewsCount, GetAllShortNews, GetAllCategories, GetAllTags string }{
+		GetAllNews:       "getallnews",
+		GetNewsById:      "getnewsbyid",
+		GetNewsCount:     "getnewscount",
+		GetAllShortNews:  "getallshortnews",
 		GetAllCategories: "getallcategories",
+		GetAllTags:       "getalltags",
 	},
 }
 
-func (NewsService) SMD() smd.ServiceInfo {
+func (Service) SMD() smd.ServiceInfo {
 	return smd.ServiceInfo{
 		Methods: map[string]smd.Service{
 			"GetAllNews": {
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
+						Optional: true,
 						Type:     smd.Object,
 						TypeName: "QueryParams",
 						Properties: smd.PropertyList{
@@ -221,6 +213,7 @@ func (NewsService) SMD() smd.ServiceInfo {
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
+						Optional: true,
 						Type:     smd.Object,
 						TypeName: "QueryParams",
 						Properties: smd.PropertyList{
@@ -251,87 +244,11 @@ func (NewsService) SMD() smd.ServiceInfo {
 					Type: smd.Integer,
 				},
 			},
-		},
-	}
-}
-
-// Invoke is as generated code from zenrpc cmd
-func (s NewsService) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
-	resp := zenrpc.Response{}
-	var err error
-
-	switch method {
-	case RPC.NewsService.GetAllNews:
-		var args = struct {
-			Params queryParams `json:"params"`
-		}{}
-
-		if zenrpc.IsArray(params) {
-			if params, err = zenrpc.ConvertToObject([]string{"params"}, params); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		if len(params) > 0 {
-			if err := json.Unmarshal(params, &args); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		resp.Set(s.GetAllNews(ctx, args.Params))
-
-	case RPC.NewsService.GetNewsById:
-		var args = struct {
-			Id int `json:"id"`
-		}{}
-
-		if zenrpc.IsArray(params) {
-			if params, err = zenrpc.ConvertToObject([]string{"id"}, params); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		if len(params) > 0 {
-			if err := json.Unmarshal(params, &args); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		resp.Set(s.GetNewsById(ctx, args.Id))
-
-	case RPC.NewsService.GetNewsCount:
-		var args = struct {
-			Params queryParams `json:"params"`
-		}{}
-
-		if zenrpc.IsArray(params) {
-			if params, err = zenrpc.ConvertToObject([]string{"params"}, params); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		if len(params) > 0 {
-			if err := json.Unmarshal(params, &args); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		resp.Set(s.GetNewsCount(ctx, args.Params))
-
-	default:
-		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)
-	}
-
-	return resp
-}
-
-func (ShortNewsService) SMD() smd.ServiceInfo {
-	return smd.ServiceInfo{
-		Methods: map[string]smd.Service{
 			"GetAllShortNews": {
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
+						Optional: true,
 						Type:     smd.Object,
 						TypeName: "QueryParams",
 						Properties: smd.PropertyList{
@@ -424,45 +341,31 @@ func (ShortNewsService) SMD() smd.ServiceInfo {
 					},
 				},
 			},
-		},
-	}
-}
-
-// Invoke is as generated code from zenrpc cmd
-func (s ShortNewsService) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
-	resp := zenrpc.Response{}
-	var err error
-
-	switch method {
-	case RPC.ShortNewsService.GetAllShortNews:
-		var args = struct {
-			Params queryParams `json:"params"`
-		}{}
-
-		if zenrpc.IsArray(params) {
-			if params, err = zenrpc.ConvertToObject([]string{"params"}, params); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		if len(params) > 0 {
-			if err := json.Unmarshal(params, &args); err != nil {
-				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
-			}
-		}
-
-		resp.Set(s.GetAllShortNews(ctx, args.Params))
-
-	default:
-		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)
-	}
-
-	return resp
-}
-
-func (TagsService) SMD() smd.ServiceInfo {
-	return smd.ServiceInfo{
-		Methods: map[string]smd.Service{
+			"GetAllCategories": {
+				Parameters: []smd.JSONSchema{},
+				Returns: smd.JSONSchema{
+					Type:     smd.Array,
+					TypeName: "[]Category",
+					Items: map[string]string{
+						"$ref": "#/definitions/Category",
+					},
+					Definitions: map[string]smd.Definition{
+						"Category": {
+							Type: "object",
+							Properties: smd.PropertyList{
+								{
+									Name: "categoryId",
+									Type: smd.Integer,
+								},
+								{
+									Name: "title",
+									Type: smd.String,
+								},
+							},
+						},
+					},
+				},
+			},
 			"GetAllTags": {
 				Parameters: []smd.JSONSchema{},
 				Returns: smd.JSONSchema{
@@ -493,59 +396,110 @@ func (TagsService) SMD() smd.ServiceInfo {
 }
 
 // Invoke is as generated code from zenrpc cmd
-func (s TagsService) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
+func (s Service) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
 	resp := zenrpc.Response{}
+	var err error
 
 	switch method {
-	case RPC.TagsService.GetAllTags:
-		resp.Set(s.GetAllTags(ctx))
+	case RPC.Service.GetAllNews:
+		var args = struct {
+			Params *queryParams `json:"params"`
+		}{}
 
-	default:
-		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)
-	}
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"params"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
 
-	return resp
-}
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
 
-func (CategoriesService) SMD() smd.ServiceInfo {
-	return smd.ServiceInfo{
-		Methods: map[string]smd.Service{
-			"GetAllCategories": {
-				Parameters: []smd.JSONSchema{},
-				Returns: smd.JSONSchema{
-					Type:     smd.Array,
-					TypeName: "[]Category",
-					Items: map[string]string{
-						"$ref": "#/definitions/Category",
-					},
-					Definitions: map[string]smd.Definition{
-						"Category": {
-							Type: "object",
-							Properties: smd.PropertyList{
-								{
-									Name: "categoryId",
-									Type: smd.Integer,
-								},
-								{
-									Name: "title",
-									Type: smd.String,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
+		//zenrpc:params=queryParams{}
+		if args.Params == nil {
+			var v queryParams = queryParams{}
+			args.Params = &v
+		}
 
-// Invoke is as generated code from zenrpc cmd
-func (s CategoriesService) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
-	resp := zenrpc.Response{}
+		resp.Set(s.GetAllNews(ctx, *args.Params))
 
-	switch method {
-	case RPC.CategoriesService.GetAllCategories:
+	case RPC.Service.GetNewsById:
+		var args = struct {
+			Id int `json:"id"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"id"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		resp.Set(s.GetNewsById(ctx, args.Id))
+
+	case RPC.Service.GetNewsCount:
+		var args = struct {
+			Params *queryParams `json:"params"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"params"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		//zenrpc:params=queryParams{}
+		if args.Params == nil {
+			var v queryParams = queryParams{}
+			args.Params = &v
+		}
+
+		resp.Set(s.GetNewsCount(ctx, *args.Params))
+
+	case RPC.Service.GetAllShortNews:
+		var args = struct {
+			Params *queryParams `json:"params"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"params"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		//zenrpc:params=queryParams{}
+		if args.Params == nil {
+			var v queryParams = queryParams{}
+			args.Params = &v
+		}
+
+		resp.Set(s.GetAllShortNews(ctx, *args.Params))
+
+	case RPC.Service.GetAllCategories:
 		resp.Set(s.GetAllCategories(ctx))
+
+	case RPC.Service.GetAllTags:
+		resp.Set(s.GetAllTags(ctx))
 
 	default:
 		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)

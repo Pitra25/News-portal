@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/vmkteam/zenrpc/v2"
 )
 
 type (
@@ -29,6 +30,11 @@ type (
 			WriteTimeout    time.Duration
 			ShutdownTimeout time.Duration
 		}
+		ServerCRP struct {
+			ExposeSMD              bool
+			AllowCORS              bool
+			DisableTransportChecks bool
+		}
 		Database pg.Options
 	}
 )
@@ -45,8 +51,6 @@ func New(cfg *Config, dbInit *pg.DB) *App {
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
 
-	rpc.Init()
-
 	return &App{
 		cfg: cfg,
 		db:  dbInit,
@@ -55,9 +59,18 @@ func New(cfg *Config, dbInit *pg.DB) *App {
 }
 
 func (a *App) Run() error {
+	go func() {
+		rpc.Run(zenrpc.NewServer(zenrpc.Options{
+			ExposeSMD:              a.cfg.ServerCRP.ExposeSMD,
+			AllowCORS:              a.cfg.ServerCRP.AllowCORS,
+			DisableTransportChecks: a.cfg.ServerCRP.DisableTransportChecks,
+		}))
+	}()
+
 	if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
+
 	return nil
 }
 

@@ -2,9 +2,11 @@ package rest
 
 import (
 	"News-portal/internal/newsportal"
+	"net/url"
+	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 type (
@@ -56,6 +58,28 @@ func (q *queryParams) NewFilter() newsportal.Filters {
 	)
 }
 
-func newErrorResponse(c *gin.Context, statusCode int, err error) {
-	c.AbortWithStatusJSON(statusCode, errorResponse{err.Error()})
+func newErrorResponse(c echo.Context, statusCode int, errR error) error {
+	return c.JSON(statusCode, errorResponse{errR.Error()})
+}
+
+func getParams(e url.Values) queryParams {
+	newsID, _ := strconv.Atoi(e.Get("newsId"))
+	categoryID, _ := strconv.Atoi(e.Get("categoryId"))
+	tagID, _ := strconv.Atoi(e.Get("tagId"))
+	pageSize, _ := strconv.Atoi(e.Get("pageSize"))
+	page, _ := strconv.Atoi(e.Get("page"))
+
+	//newsID, _ := strconv.Atoi(e.QueryParam("newsId"))
+	//categoryID, _ := strconv.Atoi(e.QueryParam("categoryId"))
+	//tagID, _ := strconv.Atoi(e.QueryParam("tagId"))
+	//pageSize, _ := strconv.Atoi(e.QueryParam("pageSize"))
+	//page, _ := strconv.Atoi(e.QueryParam("page"))
+
+	return queryParams{
+		NewsId:     newsID,
+		CategoryId: categoryID,
+		TagId:      tagID,
+		PageSize:   pageSize,
+		Page:       page,
+	}
 }

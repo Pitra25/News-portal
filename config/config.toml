@@ -5,6 +5,11 @@ ReadTimeout = "30s"
 WriteTimeout = "30s"
 ShutdownTimeout = "10s"
 
+[ServerRPC]
+ExposeSMD = true
+AllowCORS = true
+DisableTransportChecks = true
+
 [Database]
 Host = "localhost"
 Port = "5432"

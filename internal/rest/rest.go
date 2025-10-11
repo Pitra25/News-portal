@@ -3,7 +3,8 @@ package rest
 import (
 	"News-portal/internal/newsportal"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Router struct {
@@ -16,11 +17,13 @@ func NewRouter(manager *newsportal.Manager) *Router {
 	}
 }
 
-func (h *Router) InitRoutes() *gin.Engine {
-	router := gin.New()
+func (h *Router) InitRoutes() *echo.Echo {
+	router := echo.New()
+
+	router.Use(middleware.Logger())
+	router.Use(middleware.Recover())
 
 	api := router.Group("/api")
-
 	news := api.Group("/news")
 	news.GET("/", h.GetAllNews)
 	news.GET("/short", h.GetAllShortNews)

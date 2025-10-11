@@ -5,104 +5,83 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
-func (h *Router) GetAllNews(c *gin.Context) {
-	var params queryParams
-	if err := c.ShouldBindQuery(&params); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
+func (h *Router) GetAllNews(c echo.Context) error {
+	values := c.QueryParams()
+	params := getParams(values)
 
-	list, err := h.manager.GetNewsByFilters(c.Request.Context(), params.NewFilter())
+	list, err := h.manager.GetNewsByFilters(c.Request().Context(), params.NewFilter())
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
 	if len(list) == 0 {
-		newErrorResponse(c, http.StatusNoContent, errors.New("no list found"))
-		return
+		return newErrorResponse(c, http.StatusNoContent, errors.New("no list found"))
 	}
 
-	c.JSON(
-		http.StatusOK,
-		NewNewsList(list),
-	)
+	return c.JSON(http.StatusOK, NewNewsList(list))
 }
 
-func (h *Router) GetNewsById(c *gin.Context) {
-	newsIdStr, _ := c.Params.Get("id")
+func (h *Router) GetNewsById(c echo.Context) error {
+	newsIdStr := c.Param("id")
 
 	newsId, err := strconv.Atoi(newsIdStr)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	news, err := h.manager.GetNewsById(c.Request.Context(), newsId)
+	news, err := h.manager.GetNewsById(c.Request().Context(), newsId)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	c.JSON(http.StatusOK, NewNews(news))
+	return c.JSON(http.StatusOK, NewNews(news))
 }
 
-func (h *Router) GetAllShortNews(c *gin.Context) {
-	var params queryParams
-	if err := c.ShouldBindQuery(&params); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
+func (h *Router) GetAllShortNews(c echo.Context) error {
+	values := c.QueryParams()
+	params := getParams(values)
 
-	list, err := h.manager.GetNewsByFilters(c.Request.Context(), params.NewFilter())
+	list, err := h.manager.GetNewsByFilters(c.Request().Context(), params.NewFilter())
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
 	if len(list) == 0 {
-		newErrorResponse(c, http.StatusNoContent, errors.New("no news found"))
-		return
+		return newErrorResponse(c, http.StatusNoContent, errors.New("no news found"))
 	}
 
-	c.JSON(http.StatusOK, NewNewsSummaries(list))
+	return c.JSON(http.StatusOK, NewNewsSummaries(list))
 }
 
-func (h *Router) GetNewsCount(c *gin.Context) {
-	var params queryParams
-	if err := c.ShouldBindQuery(&params); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
+func (h *Router) GetNewsCount(c echo.Context) error {
+	values := c.QueryParams()
+	params := getParams(values)
 
-	count, err := h.manager.GetNewsCount(c.Request.Context(), params.NewFilter())
+	count, err := h.manager.GetNewsCount(c.Request().Context(), params.NewFilter())
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	c.JSON(http.StatusOK, count)
+	return c.JSON(http.StatusOK, count)
 }
 
-func (h *Router) GetAllCategories(c *gin.Context) {
-	categories, err := h.manager.GetAllCategory(c.Request.Context())
+func (h *Router) GetAllCategories(c echo.Context) error {
+	categories, err := h.manager.GetAllCategory(c.Request().Context())
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	c.JSON(http.StatusOK, NewCategories(categories))
+	return c.JSON(http.StatusOK, NewCategories(categories))
 }
 
-func (h *Router) GetAllTags(c *gin.Context) {
-	tags, err := h.manager.GetAllTag(c.Request.Context())
+func (h *Router) GetAllTags(c echo.Context) error {
+	tags, err := h.manager.GetAllTag(c.Request().Context())
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
+		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	c.JSON(http.StatusOK, NewTags(tags))
+	return c.JSON(http.StatusOK, NewTags(tags))
 }

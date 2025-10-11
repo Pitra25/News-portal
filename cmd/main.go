@@ -35,7 +35,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-		if err := application.Run(); err != nil {
+		if err = application.Run(); err != nil {
 			slog.Error("fail run app", "err", err)
 			return
 		}

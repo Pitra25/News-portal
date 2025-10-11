@@ -10,38 +10,17 @@ import (
 	"github.com/vmkteam/zenrpc/v2"
 )
 
-type NewsService struct {
-	zenrpc.Service
-	m *newsportal.Manager
-}
-type ShortNewsService struct {
-	zenrpc.Service
-	m *newsportal.Manager
-}
-type TagsService struct {
-	zenrpc.Service
-	m *newsportal.Manager
-}
-type CategoriesService struct {
+type Service struct {
 	zenrpc.Service
 	m *newsportal.Manager
 }
 
 //go:generate zenrpc
-func Init() {
+func Run(rpc zenrpc.Server) {
 	addr := flag.String("addr", "localhost:9999", "listen address")
 	flag.Parse()
 
-	rpc := zenrpc.NewServer(zenrpc.Options{
-		ExposeSMD:              true,
-		AllowCORS:              true,
-		DisableTransportChecks: true,
-	})
-
-	rpc.Register("news", NewsService{})
-	rpc.Register("shortNews", ShortNewsService{})
-	rpc.Register("tags", TagsService{})
-	rpc.Register("categories", CategoriesService{})
+	rpc.Register("", Service{})
 	rpc.Use(zenrpc.Logger(log.New(os.Stderr, "", log.LstdFlags)))
 
 	http.Handle("/", rpc)
