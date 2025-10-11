@@ -4,6 +4,7 @@ import (
 	"News-portal/internal/db"
 	"News-portal/internal/newsportal"
 	"News-portal/internal/rest"
+	"News-portal/internal/rpc"
 	"context"
 	"errors"
 	"fmt"
@@ -43,6 +44,8 @@ func New(cfg *Config, dbInit *pg.DB) *App {
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
+
+	rpc.Init()
 
 	return &App{
 		cfg: cfg,
