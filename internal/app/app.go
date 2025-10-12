@@ -12,14 +12,18 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/vmkteam/rpcgen/v2"
 	"github.com/vmkteam/zenrpc/v2"
 )
 
 type (
 	App struct {
-		cfg *Config
-		db  *pg.DB
-		srv *http.Server
+		cfg    *Config
+		db     *db.DB
+		dbInit *pg.DB
+		echo   *echo.Echo
 	}
 
 	Config struct {
@@ -30,44 +34,47 @@ type (
 			WriteTimeout    time.Duration
 			ShutdownTimeout time.Duration
 		}
-		ServerCRP struct {
-			ExposeSMD              bool
-			AllowCORS              bool
-			DisableTransportChecks bool
-		}
 		Database pg.Options
 	}
 )
 
 func New(cfg *Config, dbInit *pg.DB) *App {
 	conn := db.New(dbInit)
-	manager := newsportal.NewManager(conn)
-	router := rest.NewRouter(manager)
+	e := echo.New()
 
-	srv := &http.Server{
-		Addr:         cfg.Server.Host + ":" + cfg.Server.Port,
-		Handler:      router.InitRoutes(),
-		ReadTimeout:  cfg.Server.ReadTimeout,
-		WriteTimeout: cfg.Server.WriteTimeout,
-	}
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	return &App{
-		cfg: cfg,
-		db:  dbInit,
-		srv: srv,
+		cfg:    cfg,
+		db:     conn,
+		dbInit: dbInit,
+		echo:   e,
 	}
 }
 
-func (a *App) Run() error {
-	go func() {
-		rpc.Run(zenrpc.NewServer(zenrpc.Options{
-			ExposeSMD:              a.cfg.ServerCRP.ExposeSMD,
-			AllowCORS:              a.cfg.ServerCRP.AllowCORS,
-			DisableTransportChecks: a.cfg.ServerCRP.DisableTransportChecks,
-		}))
-	}()
+func (a *App) registerRoutes() {
+	manager := newsportal.NewManager(a.db)
+	router := rest.NewRouter(manager)
 
-	if err := a.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	router.AddRouter(a.echo)
+}
+
+func (a *App) RegisterRPC() {
+	manager := newsportal.NewManager(a.db)
+	srv := rpc.New(manager)
+	gen := rpcgen.FromSMD(srv.SMD())
+
+	a.echo.Any("/v1/rpc/", echo.WrapHandler(http.Handler(srv)))
+	a.echo.Any("/v1/rpc/doc/", echo.WrapHandler(http.HandlerFunc(zenrpc.SMDBoxHandler)))
+	a.echo.Any("/v1/rpc/client.ts", echo.WrapHandler(http.HandlerFunc(rpcgen.Handler(gen.TSClient(nil)))))
+}
+
+func (a *App) Run() error {
+	a.registerRoutes()
+	a.RegisterRPC()
+
+	if err := a.echo.Start(a.cfg.Server.Host + ":" + a.cfg.Server.Port); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
@@ -78,11 +85,11 @@ func (a *App) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.Server.ShutdownTimeout)
 	defer cancel()
 
-	if err := a.srv.Shutdown(ctx); err != nil {
+	if err := a.echo.Shutdown(ctx); err != nil {
 		return fmt.Errorf("fail to shutdown server: %w", err)
 	}
 
-	if err := a.db.Close(); err != nil {
+	if err := db.Close(a.dbInit); err != nil {
 		return fmt.Errorf("fail to close database: %w", err)
 	}
 

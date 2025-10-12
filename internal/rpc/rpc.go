@@ -2,30 +2,30 @@ package rpc
 
 import (
 	"News-portal/internal/newsportal"
-	"flag"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/vmkteam/zenrpc/v2"
 )
 
-type Service struct {
+type NewsService struct {
 	zenrpc.Service
 	m *newsportal.Manager
 }
 
+var noContentError = zenrpc.NewStringError(http.StatusNotFound, "not found")
+
 //go:generate zenrpc
-func Run(rpc zenrpc.Server) {
-	addr := flag.String("addr", "localhost:9999", "listen address")
-	flag.Parse()
+func New(m *newsportal.Manager) zenrpc.Server {
+	srv := zenrpc.NewServer(zenrpc.Options{
+		ExposeSMD:              true,
+		AllowCORS:              true,
+		DisableTransportChecks: true,
+	})
+	srv.Register("news", NewsService{m: m})
 
-	rpc.Register("", Service{})
-	rpc.Use(zenrpc.Logger(log.New(os.Stderr, "rpc", log.LstdFlags)))
+	return srv
+}
 
-	http.Handle("/", rpc)
-
-	log.Printf("starting arithsrv on %s", *addr)
-	log.Fatal(http.ListenAndServe(*addr, nil))
-
+func newInternalError(err error) error {
+	return zenrpc.NewStringError(http.StatusInternalServerError, err.Error())
 }

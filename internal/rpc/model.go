@@ -7,11 +7,10 @@ import (
 
 type (
 	queryParams struct {
-		NewsId     int `form:"newsId"`
-		CategoryId int `form:"categoryId"`
-		TagId      int `form:"tagId"`
-		PageSize   int `form:"pageSize"`
-		Page       int `form:"page"`
+		CategoryId int `query:"categoryId"`
+		TagId      int `query:"tagId"`
+		PageSize   int `query:"pageSize"`
+		Page       int `query:"page"`
 	}
 
 	Tag struct {
@@ -45,7 +44,7 @@ type (
 
 func (q *queryParams) NewFilter() newsportal.Filters {
 	return newsportal.NewFilters(
-		q.NewsId, q.CategoryId, q.TagId,
+		q.CategoryId, q.TagId,
 		q.PageSize, q.Page,
 	)
 }

@@ -35,7 +35,7 @@ func NewTag(in *db.Tag) *Tag {
 
 func (f *Filters) ToDB() db.Filters {
 	return db.NewFilters(
-		f.News.NewsId, f.News.CategoryId, f.News.TagId,
+		f.News.CategoryId, f.News.TagId,
 		f.Page.PageSize, f.Page.Page,
 	)
 }

@@ -4,7 +4,6 @@ import (
 	"News-portal/internal/newsportal"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 type Router struct {
@@ -17,13 +16,9 @@ func NewRouter(manager *newsportal.Manager) *Router {
 	}
 }
 
-func (h *Router) InitRoutes() *echo.Echo {
-	router := echo.New()
+func (h *Router) AddRouter(e *echo.Echo) {
+	api := e.Group("/api")
 
-	router.Use(middleware.Logger())
-	router.Use(middleware.Recover())
-
-	api := router.Group("/api")
 	news := api.Group("/news")
 	news.GET("/", h.GetAllNews)
 	news.GET("/short", h.GetAllShortNews)
@@ -38,5 +33,5 @@ func (h *Router) InitRoutes() *echo.Echo {
 	categories := api.Group("/categories")
 	categories.GET("/", h.GetAllCategories)
 
-	return router
+	return
 }

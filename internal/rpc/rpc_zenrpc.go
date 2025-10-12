@@ -11,22 +11,23 @@ import (
 )
 
 var RPC = struct {
-	Service struct{ GetAllNews, GetNewsById, GetNewsCount, GetAllShortNews, GetAllCategories, GetAllTags string }
+	NewsService struct{ News, GetById, Count, ShortsNews, Categories, Tags string }
 }{
-	Service: struct{ GetAllNews, GetNewsById, GetNewsCount, GetAllShortNews, GetAllCategories, GetAllTags string }{
-		GetAllNews:       "getallnews",
-		GetNewsById:      "getnewsbyid",
-		GetNewsCount:     "getnewscount",
-		GetAllShortNews:  "getallshortnews",
-		GetAllCategories: "getallcategories",
-		GetAllTags:       "getalltags",
+	NewsService: struct{ News, GetById, Count, ShortsNews, Categories, Tags string }{
+		News:       "news",
+		GetById:    "getbyid",
+		Count:      "count",
+		ShortsNews: "shortsnews",
+		Categories: "categories",
+		Tags:       "tags",
 	},
 }
 
-func (Service) SMD() smd.ServiceInfo {
+func (NewsService) SMD() smd.ServiceInfo {
 	return smd.ServiceInfo{
 		Methods: map[string]smd.Service{
-			"GetAllNews": {
+			"News": {
+				Description: `News return list news.`,
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
@@ -34,10 +35,6 @@ func (Service) SMD() smd.ServiceInfo {
 						Type:     smd.Object,
 						TypeName: "QueryParams",
 						Properties: smd.PropertyList{
-							{
-								Name: "NewsId",
-								Type: smd.Integer,
-							},
 							{
 								Name: "CategoryId",
 								Type: smd.Integer,
@@ -131,12 +128,17 @@ func (Service) SMD() smd.ServiceInfo {
 						},
 					},
 				},
+				Errors: map[int]string{
+					404: "not found",
+				},
 			},
-			"GetNewsById": {
+			"GetById": {
+				Description: `GetById returns news by ID.`,
 				Parameters: []smd.JSONSchema{
 					{
-						Name: "id",
-						Type: smd.Integer,
+						Name:        "id",
+						Description: `news id`,
+						Type:        smd.Integer,
 					},
 				},
 				Returns: smd.JSONSchema{
@@ -208,8 +210,12 @@ func (Service) SMD() smd.ServiceInfo {
 						},
 					},
 				},
+				Errors: map[int]string{
+					404: "not found",
+				},
 			},
-			"GetNewsCount": {
+			"Count": {
+				Description: `Count returns count news by filters.`,
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
@@ -217,10 +223,6 @@ func (Service) SMD() smd.ServiceInfo {
 						Type:     smd.Object,
 						TypeName: "QueryParams",
 						Properties: smd.PropertyList{
-							{
-								Name: "NewsId",
-								Type: smd.Integer,
-							},
 							{
 								Name: "CategoryId",
 								Type: smd.Integer,
@@ -243,8 +245,12 @@ func (Service) SMD() smd.ServiceInfo {
 				Returns: smd.JSONSchema{
 					Type: smd.Integer,
 				},
+				Errors: map[int]string{
+					404: "not found",
+				},
 			},
-			"GetAllShortNews": {
+			"ShortsNews": {
+				Description: `ShortsNews returns news summary by filters.`,
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
@@ -252,10 +258,6 @@ func (Service) SMD() smd.ServiceInfo {
 						Type:     smd.Object,
 						TypeName: "QueryParams",
 						Properties: smd.PropertyList{
-							{
-								Name: "NewsId",
-								Type: smd.Integer,
-							},
 							{
 								Name: "CategoryId",
 								Type: smd.Integer,
@@ -340,9 +342,13 @@ func (Service) SMD() smd.ServiceInfo {
 						},
 					},
 				},
+				Errors: map[int]string{
+					404: "not found",
+				},
 			},
-			"GetAllCategories": {
-				Parameters: []smd.JSONSchema{},
+			"Categories": {
+				Description: `Categories return list category`,
+				Parameters:  []smd.JSONSchema{},
 				Returns: smd.JSONSchema{
 					Type:     smd.Array,
 					TypeName: "[]Category",
@@ -365,9 +371,13 @@ func (Service) SMD() smd.ServiceInfo {
 						},
 					},
 				},
+				Errors: map[int]string{
+					404: "not found",
+				},
 			},
-			"GetAllTags": {
-				Parameters: []smd.JSONSchema{},
+			"Tags": {
+				Description: `Tags return list tag.`,
+				Parameters:  []smd.JSONSchema{},
 				Returns: smd.JSONSchema{
 					Type:     smd.Array,
 					TypeName: "[]Tag",
@@ -390,18 +400,21 @@ func (Service) SMD() smd.ServiceInfo {
 						},
 					},
 				},
+				Errors: map[int]string{
+					404: "not found",
+				},
 			},
 		},
 	}
 }
 
 // Invoke is as generated code from zenrpc cmd
-func (s Service) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
+func (s NewsService) Invoke(ctx context.Context, method string, params json.RawMessage) zenrpc.Response {
 	resp := zenrpc.Response{}
 	var err error
 
 	switch method {
-	case RPC.Service.GetAllNews:
+	case RPC.NewsService.News:
 		var args = struct {
 			Params *queryParams `json:"params"`
 		}{}
@@ -418,15 +431,9 @@ func (s Service) Invoke(ctx context.Context, method string, params json.RawMessa
 			}
 		}
 
-		//zenrpc:params=queryParams{}
-		if args.Params == nil {
-			var v queryParams = queryParams{}
-			args.Params = &v
-		}
+		resp.Set(s.News(ctx, args.Params))
 
-		resp.Set(s.GetAllNews(ctx, *args.Params))
-
-	case RPC.Service.GetNewsById:
+	case RPC.NewsService.GetById:
 		var args = struct {
 			Id int `json:"id"`
 		}{}
@@ -443,9 +450,9 @@ func (s Service) Invoke(ctx context.Context, method string, params json.RawMessa
 			}
 		}
 
-		resp.Set(s.GetNewsById(ctx, args.Id))
+		resp.Set(s.GetById(ctx, args.Id))
 
-	case RPC.Service.GetNewsCount:
+	case RPC.NewsService.Count:
 		var args = struct {
 			Params *queryParams `json:"params"`
 		}{}
@@ -462,15 +469,9 @@ func (s Service) Invoke(ctx context.Context, method string, params json.RawMessa
 			}
 		}
 
-		//zenrpc:params=queryParams{}
-		if args.Params == nil {
-			var v queryParams = queryParams{}
-			args.Params = &v
-		}
+		resp.Set(s.Count(ctx, args.Params))
 
-		resp.Set(s.GetNewsCount(ctx, *args.Params))
-
-	case RPC.Service.GetAllShortNews:
+	case RPC.NewsService.ShortsNews:
 		var args = struct {
 			Params *queryParams `json:"params"`
 		}{}
@@ -487,19 +488,13 @@ func (s Service) Invoke(ctx context.Context, method string, params json.RawMessa
 			}
 		}
 
-		//zenrpc:params=queryParams{}
-		if args.Params == nil {
-			var v queryParams = queryParams{}
-			args.Params = &v
-		}
+		resp.Set(s.ShortsNews(ctx, args.Params))
 
-		resp.Set(s.GetAllShortNews(ctx, *args.Params))
+	case RPC.NewsService.Categories:
+		resp.Set(s.Categories(ctx))
 
-	case RPC.Service.GetAllCategories:
-		resp.Set(s.GetAllCategories(ctx))
-
-	case RPC.Service.GetAllTags:
-		resp.Set(s.GetAllTags(ctx))
+	case RPC.NewsService.Tags:
+		resp.Set(s.Tags(ctx))
 
 	default:
 		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)

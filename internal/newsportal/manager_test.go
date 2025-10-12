@@ -189,7 +189,7 @@ func TestManager_GetNewsById(t *testing.T) {
 			}
 
 			news, err := m.GetNewsById(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsById() error = %e, wantErr %v", err, tt.wantErr)) {
+			if !tt.wantErr(t, err, fmt.Sprintf("GetById() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
 
@@ -260,12 +260,12 @@ func TestManager_GetNewsCount(t *testing.T) {
 			}
 
 			count, err := m.GetNewsCount(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsCount() error = %e, wantErr %v", err, tt.wantErr)) {
+			if !tt.wantErr(t, err, fmt.Sprintf("Count() error = %e, wantErr %v", err, tt.wantErr)) {
 
 				return
 			}
 
-			assert.Equal(t, tt.want, count, fmt.Sprint("GetNewsCount() count: ", count))
+			assert.Equal(t, tt.want, count, fmt.Sprint("Count() count: ", count))
 		})
 	}
 }

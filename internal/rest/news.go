@@ -9,8 +9,10 @@ import (
 )
 
 func (h *Router) GetAllNews(c echo.Context) error {
-	values := c.QueryParams()
-	params := getParams(values)
+	var params queryParams
+	if err := c.Bind(&params); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
 
 	list, err := h.manager.GetNewsByFilters(c.Request().Context(), params.NewFilter())
 	if err != nil {
@@ -41,8 +43,10 @@ func (h *Router) GetNewsById(c echo.Context) error {
 }
 
 func (h *Router) GetAllShortNews(c echo.Context) error {
-	values := c.QueryParams()
-	params := getParams(values)
+	var params queryParams
+	if err := c.Bind(&params); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
 
 	list, err := h.manager.GetNewsByFilters(c.Request().Context(), params.NewFilter())
 	if err != nil {
@@ -57,8 +61,10 @@ func (h *Router) GetAllShortNews(c echo.Context) error {
 }
 
 func (h *Router) GetNewsCount(c echo.Context) error {
-	values := c.QueryParams()
-	params := getParams(values)
+	var params queryParams
+	if err := c.Bind(&params); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
 
 	count, err := h.manager.GetNewsCount(c.Request().Context(), params.NewFilter())
 	if err != nil {

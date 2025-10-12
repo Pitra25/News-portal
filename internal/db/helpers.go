@@ -9,7 +9,6 @@ const newsStatus = 1 // published
 
 type (
 	NewsFilters struct {
-		NewsId     int
 		CategoryId int
 		TagId      int
 	}
@@ -37,13 +36,9 @@ func (fil *PageFilters) paginator() (int, int) {
 	return limit, offset
 }
 
-func NewFilters(
-	newsId, categoryId, tagId,
-	pageSize, page int,
-) Filters {
+func NewFilters(categoryId, tagId, pageSize, page int) Filters {
 	return Filters{
 		NewsFilters{
-			NewsId:     newsId,
 			CategoryId: categoryId,
 			TagId:      tagId,
 		},

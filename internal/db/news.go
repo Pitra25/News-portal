@@ -16,15 +16,15 @@ func NewRepo(db *pg.DB) *Repo {
 	}
 }
 
-func (m *Repo) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
+func (m *Repo) GetNewsByFilters(ctx context.Context, filter Filters) ([]News, error) {
 	// formation of restrictions
 	var (
-		limit, offset = fil.Page.paginator()
+		limit, offset = filter.Page.paginator()
 		results       []News
 	)
 
 	q := m.db.ModelContext(ctx, &results)
-	if err := filters(q, fil).
+	if err := filters(q, filter).
 		Relation(Columns.News.Category).
 		Limit(limit).Offset(offset).
 		Select(); err != nil {

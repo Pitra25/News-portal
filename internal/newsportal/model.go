@@ -6,7 +6,6 @@ import (
 
 type (
 	NewsFilters struct {
-		NewsId     int
 		CategoryId int
 		TagId      int
 	}
@@ -32,13 +31,9 @@ type (
 	}
 )
 
-func NewFilters(
-	newsId, categoryId, tagId,
-	pageSize, page int,
-) Filters {
+func NewFilters(categoryId, tagId, pageSize, page int) Filters {
 	return Filters{
 		NewsFilters{
-			NewsId:     newsId,
 			CategoryId: categoryId,
 			TagId:      tagId,
 		},
