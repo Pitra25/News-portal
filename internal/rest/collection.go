@@ -78,7 +78,6 @@ func NewCategory(in *newsportal.Category) *Category {
 	if in == nil {
 		return nil
 	}
-
 	return &Category{
 		ID:    in.ID,
 		Title: in.Title,
@@ -89,7 +88,6 @@ func NewNews(in *newsportal.News) *News {
 	if in == nil {
 		return nil
 	}
-
 	return &News{
 		ID:          in.ID,
 		Title:       in.Title,
@@ -104,7 +102,6 @@ func NewTag(in *newsportal.Tag) *Tag {
 	if in == nil {
 		return nil
 	}
-
 	return &Tag{
 		ID:    in.ID,
 		Title: in.Title,
