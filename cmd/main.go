@@ -14,6 +14,9 @@ import (
 
 var conFlag = flag.String("config", "./config/config.toml", "config file path")
 
+// colgen@ai:readme
+//
+//go:generate colgen
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)

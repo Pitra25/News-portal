@@ -58,6 +58,7 @@ func (h *Router) GetAllShortNews(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, NewNewsSummaries(list))
+	//return nil
 }
 
 func (h *Router) GetNewsCount(c echo.Context) error {
