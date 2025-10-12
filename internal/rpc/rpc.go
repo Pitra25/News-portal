@@ -21,7 +21,7 @@ func Run(rpc zenrpc.Server) {
 	flag.Parse()
 
 	rpc.Register("", Service{})
-	rpc.Use(zenrpc.Logger(log.New(os.Stderr, "", log.LstdFlags)))
+	rpc.Use(zenrpc.Logger(log.New(os.Stderr, "rpc", log.LstdFlags)))
 
 	http.Handle("/", rpc)
 
