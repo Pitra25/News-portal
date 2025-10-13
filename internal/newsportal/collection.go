@@ -3,19 +3,11 @@ package newsportal
 import "News-portal/internal/db"
 
 type (
-	NewsFilters struct {
+	Filters struct {
 		CategoryId int
 		TagId      int
-	}
-
-	PageFilters struct {
-		PageSize int
-		Page     int
-	}
-
-	Filters struct {
-		News NewsFilters
-		Page PageFilters
+		PageSize   int
+		Page       int
 	}
 
 	Tag struct{ db.Tag }
@@ -31,21 +23,17 @@ type (
 
 func (f *Filters) ToDB() db.Filters {
 	return db.NewFilters(
-		f.News.CategoryId, f.News.TagId,
-		f.Page.PageSize, f.Page.Page,
+		f.CategoryId, f.TagId,
+		f.PageSize, f.Page,
 	)
 }
 
 func NewFilters(categoryId, tagId, pageSize, page int) Filters {
 	return Filters{
-		NewsFilters{
-			CategoryId: categoryId,
-			TagId:      tagId,
-		},
-		PageFilters{
-			PageSize: pageSize,
-			Page:     page,
-		},
+		CategoryId: categoryId,
+		TagId:      tagId,
+		PageSize:   pageSize,
+		Page:       page,
 	}
 }
 

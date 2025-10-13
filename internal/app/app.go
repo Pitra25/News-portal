@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/vmkteam/rpcgen/v2"
+	"github.com/vmkteam/rpcgen/v2/golang"
 	"github.com/vmkteam/zenrpc/v2"
 )
 
@@ -39,17 +40,11 @@ type (
 )
 
 func New(cfg *Config, dbInit *pg.DB) *App {
-	conn := db.New(dbInit)
-	e := echo.New()
-
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
 	return &App{
 		cfg:    cfg,
-		db:     conn,
+		db:     db.New(dbInit),
 		dbInit: dbInit,
-		echo:   e,
+		echo:   echo.New(),
 	}
 }
 
@@ -57,10 +52,13 @@ func (a *App) registerRoutes() {
 	manager := newsportal.NewManager(a.db)
 	router := rest.NewRouter(manager)
 
+	a.echo.Use(middleware.Logger())
+	a.echo.Use(middleware.Recover())
+
 	router.AddRouter(a.echo)
 }
 
-func (a *App) RegisterRPC() {
+func (a *App) registerRPC() {
 	manager := newsportal.NewManager(a.db)
 	srv := rpc.New(manager)
 	gen := rpcgen.FromSMD(srv.SMD())
@@ -68,13 +66,15 @@ func (a *App) RegisterRPC() {
 	a.echo.Any("/v1/rpc/", echo.WrapHandler(http.Handler(srv)))
 	a.echo.Any("/v1/rpc/doc/", echo.WrapHandler(http.HandlerFunc(zenrpc.SMDBoxHandler)))
 	a.echo.Any("/v1/rpc/client.ts", echo.WrapHandler(http.HandlerFunc(rpcgen.Handler(gen.TSClient(nil)))))
+	a.echo.Any("/v1/rpc/client.go", echo.WrapHandler(http.HandlerFunc(rpcgen.Handler(gen.GoClient(golang.Settings{})))))
 }
 
 func (a *App) Run() error {
 	a.registerRoutes()
-	a.RegisterRPC()
+	a.registerRPC()
 
-	if err := a.echo.Start(a.cfg.Server.Host + ":" + a.cfg.Server.Port); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	address := a.cfg.Server.Host + ":" + a.cfg.Server.Port
+	if err := a.echo.Start(address); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 

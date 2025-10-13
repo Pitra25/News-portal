@@ -47,7 +47,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestConnect(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		args    *pg.Options

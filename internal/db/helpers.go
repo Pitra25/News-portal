@@ -7,24 +7,14 @@ import (
 
 const newsStatus = 1 // published
 
-type (
-	NewsFilters struct {
-		CategoryId int
-		TagId      int
-	}
+type Filters struct {
+	CategoryId int
+	TagId      int
+	PageSize   int
+	Page       int
+}
 
-	PageFilters struct {
-		PageSize int
-		Page     int
-	}
-
-	Filters struct {
-		News NewsFilters
-		Page PageFilters
-	}
-)
-
-func (fil *PageFilters) paginator() (int, int) {
+func (fil *Filters) paginator() (int, int) {
 	limit, offset := 10, 0
 	if fil.Page == 1 {
 		limit = fil.PageSize
@@ -38,14 +28,10 @@ func (fil *PageFilters) paginator() (int, int) {
 
 func NewFilters(categoryId, tagId, pageSize, page int) Filters {
 	return Filters{
-		NewsFilters{
-			CategoryId: categoryId,
-			TagId:      tagId,
-		},
-		PageFilters{
-			PageSize: pageSize,
-			Page:     page,
-		},
+		CategoryId: categoryId,
+		TagId:      tagId,
+		PageSize:   pageSize,
+		Page:       page,
 	}
 }
 
@@ -56,7 +42,7 @@ func filPubAt(orm *orm.Query) *orm.Query {
 	)
 }
 
-func setQueryFilters(orm *orm.Query) *orm.Query {
+func filStatus(orm *orm.Query) *orm.Query {
 	return orm.Where(
 		`"t".? = ?`,
 		pg.Ident(Columns.News.StatusID),
@@ -65,18 +51,18 @@ func setQueryFilters(orm *orm.Query) *orm.Query {
 }
 
 func filters(orm *orm.Query, fil Filters) *orm.Query {
-	query := setQueryFilters(filPubAt(orm))
-	if fil.News.CategoryId != 0 {
+	query := filStatus(filPubAt(orm))
+	if fil.CategoryId != 0 {
 		query.Where(
 			`"t".? = ?`,
 			pg.Ident(Columns.News.CategoryID),
-			fil.News.CategoryId,
+			fil.CategoryId,
 		)
 	}
-	if fil.News.TagId != 0 {
+	if fil.TagId != 0 {
 		query.Where(
 			`? = ANY("t".?)`,
-			fil.News.TagId,
+			fil.TagId,
 			pg.Ident(Columns.News.TagIDs),
 		)
 	}

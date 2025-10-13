@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,14 +18,10 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (1)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 2,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 2,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -34,14 +29,10 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (2)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 4,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 4,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    4,
 			wantErr: assert.NoError,
@@ -49,14 +40,10 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (3)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 5,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 5,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    0,
 			wantErr: assert.NoError,
@@ -64,14 +51,10 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (4)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 10,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 10,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -79,14 +62,10 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (4)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 10,
-					TagId:      0,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 10,
+				TagId:      0,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    2,
 			wantErr: assert.NoError,
@@ -94,14 +73,10 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (4)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 0,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 0,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    10,
 			wantErr: assert.NoError,
@@ -117,8 +92,6 @@ func Test_Repo_GetNewsByFilters(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
-
-			slog.Info("list", "len", len(list))
 
 			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
 		})
@@ -179,10 +152,8 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 1 and tagId 0",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 1,
-					TagId:      0,
-				},
+				CategoryId: 1,
+				TagId:      0,
 			},
 			want:    3,
 			wantErr: assert.NoError,
@@ -190,10 +161,8 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 2 and tagId 0",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 2,
-					TagId:      0,
-				},
+				CategoryId: 2,
+				TagId:      0,
 			},
 			want:    3,
 			wantErr: assert.NoError,
@@ -201,10 +170,8 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 1 and tagId 1",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 1,
-					TagId:      1,
-				},
+				CategoryId: 1,
+				TagId:      1,
 			},
 			want:    2,
 			wantErr: assert.NoError,
@@ -212,10 +179,8 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 2 and tagId 1",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 2,
-					TagId:      1,
-				},
+				CategoryId: 2,
+				TagId:      1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -223,10 +188,8 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 2 and tagId 2",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 2,
-					TagId:      2,
-				},
+				CategoryId: 2,
+				TagId:      2,
 			},
 			want:    3,
 			wantErr: assert.NoError,
@@ -234,10 +197,8 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 7 and tagId 1",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 7,
-					TagId:      1,
-				},
+				CategoryId: 7,
+				TagId:      1,
 			},
 			want:    4,
 			wantErr: assert.NoError,
@@ -252,7 +213,6 @@ func Test_Repo_GetNewsCount(t *testing.T) {
 
 			count, err := m.GetNewsCount(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("Count() error = %e, wantErr %v", err, tt.wantErr)) {
-
 				return
 			}
 

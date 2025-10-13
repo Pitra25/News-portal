@@ -19,11 +19,11 @@ func NewRepo(db *pg.DB) *Repo {
 func (m *Repo) GetNewsByFilters(ctx context.Context, filter Filters) ([]News, error) {
 	// formation of restrictions
 	var (
-		limit, offset = filter.Page.paginator()
-		results       []News
+		limit, offset = filter.paginator()
+		list          []News
 	)
 
-	q := m.db.ModelContext(ctx, &results)
+	q := m.db.ModelContext(ctx, &list)
 	if err := filters(q, filter).
 		Relation(Columns.News.Category).
 		Limit(limit).Offset(offset).
@@ -31,7 +31,7 @@ func (m *Repo) GetNewsByFilters(ctx context.Context, filter Filters) ([]News, er
 		return nil, err
 	}
 
-	return results, nil
+	return list, nil
 }
 
 func (m *Repo) GetNewsById(ctx context.Context, id int) (*News, error) {
@@ -57,7 +57,7 @@ func (m *Repo) GetListCategories(ctx context.Context) ([]Category, error) {
 	var list []Category
 
 	q := m.db.ModelContext(ctx, &list)
-	err := setQueryFilters(q).Select()
+	err := filStatus(q).Select()
 
 	return list, err
 }
@@ -66,7 +66,7 @@ func (m *Repo) GetTagsList(ctx context.Context) ([]Tag, error) {
 	var list []Tag
 
 	q := m.db.ModelContext(ctx, &list)
-	err := setQueryFilters(q).Select()
+	err := filStatus(q).Select()
 
 	return list, err
 }
@@ -77,7 +77,7 @@ func (m *Repo) GetTagByID(ctx context.Context, ids []int) ([]Tag, error) {
 	}
 
 	var list []Tag
-	if err := setQueryFilters(m.db.ModelContext(ctx, &list)).
+	if err := filStatus(m.db.ModelContext(ctx, &list)).
 		Where(`"t".? IN (?)`, pg.Ident(Columns.Tag.ID), pg.In(ids)).
 		Select(); err != nil {
 		return nil, err
