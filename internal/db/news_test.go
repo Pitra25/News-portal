@@ -1,6 +1,7 @@
 package db
 
 import (
+	"News-portal/internal/db/test"
 	"context"
 	"fmt"
 	"testing"
@@ -8,97 +9,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Repo_GetNewsByFilters(t *testing.T) {
-	tests := []struct {
-		name    string
-		args    Filters
-		want    int
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Get all news by query (1)",
-			args: Filters{
-				CategoryId: 2,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (2)",
-			args: Filters{
-				CategoryId: 4,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    4,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (3)",
-			args: Filters{
-				CategoryId: 5,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    0,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (4)",
-			args: Filters{
-				CategoryId: 10,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (4)",
-			args: Filters{
-				CategoryId: 10,
-				TagId:      0,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    2,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (4)",
-			args: Filters{
-				CategoryId: 0,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    10,
-			wantErr: assert.NoError,
-		},
-	}
+func intP(i int) *int {
+	return &i
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := &Repo{
-				db: connDB,
-			}
-			list, err := m.GetNewsByFilters(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
-				return
-			}
+/*** Category ***/
 
-			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
-		})
-	}
+func Test_AddCategory(t *testing.T) {
+	dbo := test.Setup(t)
+
+	res, clean := test.Category(t, dbo, nil, test.WithFakeCategory)
+	defer clean()
+
+	fmt.Print(res)
+
+	assert.Len(t, res, 1)
+}
+
+func Test_CategoriesByFilters_List(t *testing.T) {
+	dbo := test.Setup(t)
+	repo := NewNewsRepo(dbo)
+
+	tags, err := repo.CategoriesByFilters(
+		context.Background(),
+		nil,
+		PagerNoLimit,
+	)
+	assert.NoError(t, err)
+
+	const minLength = 5
+	assert.GreaterOrEqual(t, len(tags), minLength, fmt.Sprint("len: ", len(tags)))
+}
+
+/*** News ***/
+
+func Test_AddNews(t *testing.T) {
+	dbo := test.Setup(t)
+
+	res, clean := test.News(t, dbo, nil, test.WithFakeNews, test.WithNewsRelations)
+	defer clean()
+
+	assert.Len(t, res, 1)
 }
 
 func Test_Repo_GetNewsById(t *testing.T) {
+	dbo := test.Setup(t)
 	tests := []struct {
 		name    string
 		args    int
@@ -127,11 +82,9 @@ func Test_Repo_GetNewsById(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			repo := NewNewsRepo(dbo)
 
-			m := &Repo{
-				db: connDB,
-			}
-			news, err := m.GetNewsById(context.Background(), tt.args)
+			news, err := repo.NewsByID(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetByFiltersNews() error = %e, wantErr %v", err, tt.wantErr)) {
 				return
 			}
@@ -142,155 +95,67 @@ func Test_Repo_GetNewsById(t *testing.T) {
 	}
 }
 
-func Test_Repo_GetNewsCount(t *testing.T) {
+func Test_Repo_GetListCategories(t *testing.T) {
+	dbo := test.Setup(t)
+
 	tests := []struct {
 		name    string
-		args    Filters
+		args    *NewsSearch
 		want    int
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Get count by categoryId 1 and tagId 0",
-			args: Filters{
-				CategoryId: 1,
-				TagId:      0,
-			},
-			want:    3,
+			name:    "not filters",
+			args:    nil,
+			want:    24,
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Get count by categoryId 2 and tagId 0",
-			args: Filters{
-				CategoryId: 2,
-				TagId:      0,
-			},
-			want:    3,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get count by categoryId 1 and tagId 1",
-			args: Filters{
-				CategoryId: 1,
-				TagId:      1,
+			name: "filters status",
+			args: &NewsSearch{
+				StatusID: intP(2),
 			},
 			want:    2,
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Get count by categoryId 2 and tagId 1",
-			args: Filters{
-				CategoryId: 2,
-				TagId:      1,
+			name: "Get news by id (3)",
+			args: &NewsSearch{
+				CategoryID: intP(3),
 			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get count by categoryId 2 and tagId 2",
-			args: Filters{
-				CategoryId: 2,
-				TagId:      2,
-			},
-			want:    3,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get count by categoryId 7 and tagId 1",
-			args: Filters{
-				CategoryId: 7,
-				TagId:      1,
-			},
-			want:    4,
+			want:    5,
 			wantErr: assert.NoError,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			repo := NewNewsRepo(dbo)
 
-			m := &Repo{
-				db: connDB,
-			}
+			countNews, err := repo.CountNews(context.Background(), tt.args)
+			assert.NoError(t, err)
 
-			count, err := m.GetNewsCount(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("Count() error = %e, wantErr %v", err, tt.wantErr)) {
-				return
-			}
-
-			assert.Equal(t, tt.want, count, fmt.Sprint("Count() count: ", count))
+			assert.Equal(t, countNews, tt.want, fmt.Sprint("countNews: ", countNews))
 		})
 	}
 }
 
-func Test_Repo_GetListCategories(t *testing.T) {
-	m := &Repo{
-		db: connDB,
-	}
-	tags, err := m.GetListCategories(context.Background())
-	assert.NoError(t, err)
+/*** Tag ***/
 
-	const minLength = 5
-	assert.GreaterOrEqual(t, len(tags), minLength, fmt.Sprint("len: ", len(tags)))
+func Test_AddTag(t *testing.T) {
+	dbo := test.Setup(t)
+
+	res, clean := test.Tag(t, dbo, nil, test.WithFakeTag)
+	defer clean()
+
+	fmt.Print(res)
 }
 
-func Test_Repo_GetTagByID(t *testing.T) {
+func Test_CountTags(t *testing.T) {
+	dbo := test.Setup(t)
 
-	tests := []struct {
-		name    string
-		args    []int
-		want    []Tag
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "test 1",
-			args: []int{1, 2, 10},
-			want: []Tag{
-				{ID: 1, Title: "Новости", StatusID: 1},
-				{ID: 2, Title: "Аналитика", StatusID: 1},
-				{ID: 10, Title: "Прогноз", StatusID: 1},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "test 2",
-			args: []int{1, 6, 9},
-			want: []Tag{
-				{ID: 1, Title: "Новости", StatusID: 1},
-				{ID: 6, Title: "Обзор", StatusID: 1},
-				{ID: 9, Title: "Статистика", StatusID: 1},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "test 3",
-			args: []int{1, 5, 9},
-			want: []Tag{
-				{ID: 1, Title: "Новости", StatusID: 1},
-				{ID: 5, Title: "Реportаж", StatusID: 1},
-				{ID: 9, Title: "Статистика", StatusID: 1},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "test 4",
-			args: []int{1, 4, 5},
-			want: []Tag{
-				{ID: 1, Title: "Новости", StatusID: 1},
-				{ID: 4, Title: "Интервью", StatusID: 1},
-				{ID: 5, Title: "Реportаж", StatusID: 1},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := &Repo{
-				db: connDB,
-			}
-			got, err := m.GetTagByID(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetTagByID(%v)", tt.args)) {
-				return
-			}
-			assert.Equalf(t, tt.want, got, "GetTagByID(%v)", tt.args)
-		})
-	}
+	res, clean := test.Tag(t, dbo, nil)
+	defer clean()
+
+	assert.Len(t, res, 1)
 }

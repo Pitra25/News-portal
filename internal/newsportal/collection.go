@@ -2,41 +2,6 @@ package newsportal
 
 import "News-portal/internal/db"
 
-type (
-	Filters struct {
-		CategoryId int
-		TagId      int
-		PageSize   int
-		Page       int
-	}
-
-	Tag struct{ db.Tag }
-
-	Category struct{ db.Category }
-
-	News struct {
-		db.News
-		Category *Category
-		Tags     []Tag
-	}
-)
-
-func (f *Filters) ToDB() db.Filters {
-	return db.NewFilters(
-		f.CategoryId, f.TagId,
-		f.PageSize, f.Page,
-	)
-}
-
-func NewFilters(categoryId, tagId, pageSize, page int) Filters {
-	return Filters{
-		CategoryId: categoryId,
-		TagId:      tagId,
-		PageSize:   pageSize,
-		Page:       page,
-	}
-}
-
 //go:generate colgen -imports=News-portal/internal/db
 //colgen:News,Category,Tag
 //colgen:News:UniqueTagIDs,MapP(db)

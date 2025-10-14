@@ -8,17 +8,28 @@ import (
 )
 
 type Manager struct {
-	db *db.DB
+	repo db.NewsRepo
 }
 
-func NewManager(db *db.DB) *Manager {
+func NewManager(dbc *db.DB) *Manager {
 	return &Manager{
-		db: db,
+		repo: db.NewNewsRepo(dbc),
 	}
 }
 
+/*** News ***/
+
 func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
-	dbNews, err := m.db.Repo.GetNewsByFilters(ctx, fil.ToDB())
+	dbNews, err := m.repo.NewsByFilters(
+		ctx,
+		&db.NewsSearch{
+			CategoryID: &fil.CategoryId,
+			IDs:        []int{fil.TagId},
+		}, db.Pager{
+			Page:     fil.Page,
+			PageSize: fil.PageSize,
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
 	}
@@ -38,7 +49,7 @@ func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, er
 
 func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 	// receiving news by ID
-	news, err := m.db.Repo.GetNewsById(ctx, id)
+	news, err := m.repo.NewsByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
 	}
@@ -54,21 +65,36 @@ func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 	return result, nil
 }
 
+func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
+	return m.repo.CountNews(ctx,
+		&db.NewsSearch{
+			CategoryID: &fil.CategoryId,
+			IDs:        []int{fil.TagId},
+		},
+	)
+}
+
+/*** Category ***/
+
+func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
+	categories, err := m.repo.CategoriesByFilters(ctx, &db.CategorySearch{}, db.PagerNoLimit)
+	return NewCategories(categories), err
+}
+
+/*** Tag ***/
+
 func (m *Manager) GetAllTag(ctx context.Context) ([]Tag, error) {
-	tags, err := m.db.Repo.GetTagsList(ctx)
+	tags, err := m.repo.TagsByFilters(ctx, &db.TagSearch{}, db.PagerNoLimit)
 	return NewTags(tags), err
 }
 
 func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
-	tags, err := m.db.Repo.GetTagByID(ctx, ids)
+	tags, err := m.repo.TagsByFilters(
+		ctx,
+		&db.TagSearch{
+			IDs: ids,
+		},
+		db.PagerNoLimit,
+	)
 	return NewTags(tags), err
-}
-
-func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
-	categories, err := m.db.Repo.GetListCategories(ctx)
-	return NewCategories(categories), err
-}
-
-func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
-	return m.db.Repo.GetNewsCount(ctx, fil.ToDB())
 }

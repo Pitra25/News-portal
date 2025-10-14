@@ -3,10 +3,10 @@ module News-portal
 go 1.24.5
 
 require (
-	github.com/go-pg/pg/extra/pgdebug v0.2.0
+	github.com/brianvoe/gofakeit/v7 v7.8.0
 	github.com/go-pg/pg/v10 v10.15.0
+	github.com/go-pg/urlstruct v1.0.1
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/lib/pq v1.10.9
 	github.com/vmkteam/rpcgen/v2 v2.4.7
 	github.com/vmkteam/zenrpc/v2 v2.2.12
 )
@@ -14,6 +14,7 @@ require (
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/codemodus/kace v0.5.1 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
