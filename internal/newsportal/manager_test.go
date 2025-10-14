@@ -2,49 +2,30 @@ package newsportal
 
 import (
 	"News-portal/internal/db"
+	"News-portal/internal/db/test"
 	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"testing"
 
-	"github.com/go-pg/pg/v10"
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	host     = "localhost"
-	port     = "5432"
-	user     = "postgres"
-	password = "postgres"
-	dbname   = "postgres"
-)
-
-var (
-	connDB *db.DB
-	opt    = pg.Options{
-		Addr:     host + ":" + port,
-		User:     user,
-		Password: password,
-		Database: dbname,
-	}
-)
+var connDB db.NewsRepo
 
 func TestMain(m *testing.M) {
-	conn, err := db.Connect(&opt)
-	if err != nil {
-		panic(err)
-	}
-	connDB = db.New(conn)
+	var t *testing.T
+	dbo := test.Setup(t)
+	connDB = db.NewNewsRepo(dbo)
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
 }
 
 func TestManager_GetAllCategory(t *testing.T) {
-
 	m := &Manager{
-		db: connDB,
+		repo: connDB,
 	}
 	categories, err := m.GetAllCategory(context.Background())
 	assert.NoError(t, err)
@@ -58,9 +39,8 @@ func TestManager_GetAllCategory(t *testing.T) {
 }
 
 func TestManager_GetAllTag(t *testing.T) {
-
 	m := &Manager{
-		db: connDB,
+		repo: connDB,
 	}
 	tags, err := m.GetAllTag(context.Background())
 	assert.NoError(t, err)
@@ -71,7 +51,6 @@ func TestManager_GetAllTag(t *testing.T) {
 }
 
 func TestManager_GetNewsByFilters(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		args    Filters
@@ -81,14 +60,10 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (1)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 2,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 2,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -96,14 +71,10 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (2)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 4,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 4,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    4,
 			wantErr: assert.NoError,
@@ -111,14 +82,10 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (3)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 5,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 5,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    0,
 			wantErr: assert.NoError,
@@ -126,14 +93,10 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 		{
 			name: "Get all news by query (4)",
 			args: Filters{
-				NewsFilters{
-					CategoryId: 10,
-					TagId:      1,
-				},
-				PageFilters{
-					PageSize: 10,
-					Page:     1,
-				},
+				CategoryId: 10,
+				TagId:      1,
+				PageSize:   10,
+				Page:       1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -142,7 +105,7 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Manager{
-				db: connDB,
+				repo: connDB,
 			}
 			list, err := m.GetNewsByFilters(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsByFilters() error = %e, wantErr %v", err, tt.wantErr)) {
@@ -155,7 +118,6 @@ func TestManager_GetNewsByFilters(t *testing.T) {
 }
 
 func TestManager_GetNewsById(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		args    int
@@ -185,7 +147,7 @@ func TestManager_GetNewsById(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			m := &Manager{
-				db: connDB,
+				repo: connDB,
 			}
 
 			news, err := m.GetNewsById(context.Background(), tt.args)
@@ -201,7 +163,6 @@ func TestManager_GetNewsById(t *testing.T) {
 }
 
 func TestManager_GetNewsCount(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		args    Filters
@@ -211,10 +172,8 @@ func TestManager_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 1 and tagId 0",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 1,
-					TagId:      0,
-				},
+				CategoryId: 1,
+				TagId:      0,
 			},
 			want:    3,
 			wantErr: assert.NoError,
@@ -222,10 +181,8 @@ func TestManager_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 2 and tagId 0",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 2,
-					TagId:      0,
-				},
+				CategoryId: 2,
+				TagId:      0,
 			},
 			want:    3,
 			wantErr: assert.NoError,
@@ -233,10 +190,8 @@ func TestManager_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 1 and tagId 1",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 1,
-					TagId:      1,
-				},
+				CategoryId: 1,
+				TagId:      1,
 			},
 			want:    2,
 			wantErr: assert.NoError,
@@ -244,10 +199,8 @@ func TestManager_GetNewsCount(t *testing.T) {
 		{
 			name: "Get count by categoryId 2 and tagId 1",
 			args: Filters{
-				News: NewsFilters{
-					CategoryId: 2,
-					TagId:      1,
-				},
+				CategoryId: 2,
+				TagId:      1,
 			},
 			want:    1,
 			wantErr: assert.NoError,
@@ -256,12 +209,11 @@ func TestManager_GetNewsCount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Manager{
-				db: connDB,
+				repo: connDB,
 			}
 
 			count, err := m.GetNewsCount(context.Background(), tt.args)
 			if !tt.wantErr(t, err, fmt.Sprintf("Count() error = %e, wantErr %v", err, tt.wantErr)) {
-
 				return
 			}
 

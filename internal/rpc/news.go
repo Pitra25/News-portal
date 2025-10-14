@@ -4,6 +4,8 @@ import (
 	"context"
 )
 
+/*** News ***/
+
 // News return list news.
 //
 //zenrpc:404 not found
@@ -59,6 +61,8 @@ func (ns *NewsService) ShortsNews(ctx context.Context, params *queryParams) ([]N
 	return NewNewsSummaries(list), nil
 }
 
+/*** Category ***/
+
 // Categories return list category
 //
 //zenrpc:404 not found
@@ -72,6 +76,8 @@ func (ns *NewsService) Categories(ctx context.Context) ([]Category, error) {
 
 	return NewCategories(list), nil
 }
+
+/*** Tag ***/
 
 // Tags return list tag.
 //

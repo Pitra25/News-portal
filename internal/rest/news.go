@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+/*** News ***/
+
 func (h *Router) GetAllNews(c echo.Context) error {
 	var params queryParams
 	if err := c.Bind(&params); err != nil {
@@ -75,6 +77,8 @@ func (h *Router) GetNewsCount(c echo.Context) error {
 	return c.JSON(http.StatusOK, count)
 }
 
+/*** Category ***/
+
 func (h *Router) GetAllCategories(c echo.Context) error {
 	categories, err := h.manager.GetAllCategory(c.Request().Context())
 	if err != nil {
@@ -83,6 +87,8 @@ func (h *Router) GetAllCategories(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, NewCategories(categories))
 }
+
+/*** Tag ***/
 
 func (h *Router) GetAllTags(c echo.Context) error {
 	tags, err := h.manager.GetAllTag(c.Request().Context())
