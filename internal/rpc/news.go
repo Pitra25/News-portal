@@ -61,6 +61,18 @@ func (ns *NewsService) NewsSummaries(ctx context.Context, params *queryParams) (
 	return NewNewsSummaries(list), nil
 }
 
+// AddNews return new news.
+//
+//zenrpc:404 not found
+func (ns *NewsService) AddNews(ctx context.Context, in NewsInput) (*News, error) {
+	res, err := ns.m.AddNews(ctx, newsToManager(&in))
+	if err != nil {
+		return nil, newInternalError(err)
+	}
+
+	return NewNews(res), nil
+}
+
 /*** Category ***/
 
 // Categories return list category
@@ -77,6 +89,18 @@ func (ns *NewsService) Categories(ctx context.Context) ([]Category, error) {
 	return NewCategories(list), nil
 }
 
+// AddCategory return new category.
+//
+//zenrpc:404 not found
+func (ns *NewsService) AddCategory(ctx context.Context, in CategoryInput) (*Category, error) {
+	res, err := ns.m.AddCategory(ctx, categoryToManager(&in))
+	if err != nil {
+		return nil, newInternalError(err)
+	}
+
+	return NewCategory(res), nil
+}
+
 /*** Tag ***/
 
 // Tags return list tag.
@@ -91,4 +115,16 @@ func (ns *NewsService) Tags(ctx context.Context) ([]Tag, error) {
 	}
 
 	return NewTags(list), nil
+}
+
+// AddTag return new tag.
+//
+//zenrpc:404 not found
+func (ns *NewsService) AddTag(ctx context.Context, in TagInput) (*Tag, error) {
+	res, err := ns.m.AddTag(ctx, tagToManager(&in))
+	if err != nil {
+		return nil, newInternalError(err)
+	}
+
+	return NewTag(res), nil
 }

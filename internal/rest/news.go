@@ -77,6 +77,22 @@ func (h *Router) GetNewsCount(c echo.Context) error {
 	return c.JSON(http.StatusOK, count)
 }
 
+func (h *Router) AddNews(c echo.Context) error {
+	var newItem *NewsInput
+
+	if err := c.Bind(&newItem); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
+
+	res, err := h.manager.AddNews(c.Request().Context(), newsToManager(newItem))
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+
+}
+
 /*** Category ***/
 
 func (h *Router) GetAllCategories(c echo.Context) error {
@@ -88,6 +104,22 @@ func (h *Router) GetAllCategories(c echo.Context) error {
 	return c.JSON(http.StatusOK, NewCategories(categories))
 }
 
+func (h *Router) AddCategory(c echo.Context) error {
+	var newItem *CategoryInput
+
+	if err := c.Bind(&newItem); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
+
+	res, err := h.manager.AddCategory(c.Request().Context(), categoryToManager(newItem))
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+
+}
+
 /*** Tag ***/
 
 func (h *Router) GetAllTags(c echo.Context) error {
@@ -97,4 +129,20 @@ func (h *Router) GetAllTags(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, NewTags(tags))
+}
+
+func (h *Router) AddTag(c echo.Context) error {
+	var newItem *TagInput
+
+	if err := c.Bind(&newItem); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
+
+	res, err := h.manager.AddTag(c.Request().Context(), tagToManager(newItem))
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+
 }

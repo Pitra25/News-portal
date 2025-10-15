@@ -61,6 +61,7 @@ func (a *App) registerRPC() {
 	srv := rpc.New(manager)
 	gen := rpcgen.FromSMD(srv.SMD())
 
+	// doc url/?smd
 	a.echo.Any("/v1/rpc/", echo.WrapHandler(http.Handler(srv)))
 	a.echo.Any("/v1/rpc/doc/", echo.WrapHandler(http.HandlerFunc(zenrpc.SMDBoxHandler)))
 	a.echo.Any("/v1/rpc/client.ts", echo.WrapHandler(http.HandlerFunc(rpcgen.Handler(gen.TSClient(nil)))))

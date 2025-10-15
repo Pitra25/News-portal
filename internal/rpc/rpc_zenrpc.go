@@ -11,15 +11,18 @@ import (
 )
 
 var RPC = struct {
-	NewsService struct{ News, GetById, Count, ShortsNews, Categories, Tags string }
+	NewsService struct{ News, GetById, Count, NewsSummaries, AddNews, Categories, AddCategory, Tags, AddTag string }
 }{
-	NewsService: struct{ News, GetById, Count, ShortsNews, Categories, Tags string }{
-		News:       "news",
-		GetById:    "getbyid",
-		Count:      "count",
-		ShortsNews: "shortsnews",
-		Categories: "categories",
-		Tags:       "tags",
+	NewsService: struct{ News, GetById, Count, NewsSummaries, AddNews, Categories, AddCategory, Tags, AddTag string }{
+		News:          "news",
+		GetById:       "getbyid",
+		Count:         "count",
+		NewsSummaries: "newssummaries",
+		AddNews:       "addnews",
+		Categories:    "categories",
+		AddCategory:   "addcategory",
+		Tags:          "tags",
+		AddTag:        "addtag",
 	},
 }
 
@@ -249,8 +252,8 @@ func (NewsService) SMD() smd.ServiceInfo {
 					404: "not found",
 				},
 			},
-			"GetNewsSummaries": {
-				Description: `GetNewsSummaries returns news summary by filters.`,
+			"NewsSummaries": {
+				Description: `NewsSummaries returns news summary by filters.`,
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
@@ -346,6 +349,119 @@ func (NewsService) SMD() smd.ServiceInfo {
 					404: "not found",
 				},
 			},
+			"AddNews": {
+				Description: `AddNews return new news.`,
+				Parameters: []smd.JSONSchema{
+					{
+						Name:     "in",
+						Type:     smd.Object,
+						TypeName: "NewsInput",
+						Properties: smd.PropertyList{
+							{
+								Name: "title",
+								Type: smd.String,
+							},
+							{
+								Name:     "content",
+								Optional: true,
+								Type:     smd.String,
+							},
+							{
+								Name: "author",
+								Type: smd.String,
+							},
+							{
+								Name: "categoryID",
+								Type: smd.Integer,
+							},
+							{
+								Name: "tagIds",
+								Type: smd.Array,
+								Items: map[string]string{
+									"type": smd.Integer,
+								},
+							},
+							{
+								Name:     "publishedAt",
+								Optional: true,
+								Type:     smd.String,
+							},
+						},
+					},
+				},
+				Returns: smd.JSONSchema{
+					Optional: true,
+					Type:     smd.Object,
+					TypeName: "News",
+					Properties: smd.PropertyList{
+						{
+							Name: "newsID",
+							Type: smd.Integer,
+						},
+						{
+							Name: "title",
+							Type: smd.String,
+						},
+						{
+							Name:     "content",
+							Optional: true,
+							Type:     smd.String,
+						},
+						{
+							Name: "author",
+							Type: smd.String,
+						},
+						{
+							Name:     "category",
+							Optional: true,
+							Ref:      "#/definitions/Category",
+							Type:     smd.Object,
+						},
+						{
+							Name: "tagIds",
+							Type: smd.Array,
+							Items: map[string]string{
+								"$ref": "#/definitions/Tag",
+							},
+						},
+						{
+							Name: "publishedAt",
+							Type: smd.String,
+						},
+					},
+					Definitions: map[string]smd.Definition{
+						"Category": {
+							Type: "object",
+							Properties: smd.PropertyList{
+								{
+									Name: "categoryId",
+									Type: smd.Integer,
+								},
+								{
+									Name: "title",
+									Type: smd.String,
+								},
+							},
+						},
+						"Tag": {
+							Type: "object",
+							Properties: smd.PropertyList{
+								{
+									Name: "tagID",
+									Type: smd.Integer,
+								},
+								{
+									Name: "title",
+									Type: smd.String,
+								},
+							},
+						},
+					},
+				},
+				Errors: map[int]string{
+					404: "not found",
+				},
+			},
 			"Categories": {
 				Description: `Categories return list category`,
 				Parameters:  []smd.JSONSchema{},
@@ -375,6 +491,45 @@ func (NewsService) SMD() smd.ServiceInfo {
 					404: "not found",
 				},
 			},
+			"AddCategory": {
+				Description: `AddCategory return new category.`,
+				Parameters: []smd.JSONSchema{
+					{
+						Name:     "in",
+						Type:     smd.Object,
+						TypeName: "CategoryInput",
+						Properties: smd.PropertyList{
+							{
+								Name: "title",
+								Type: smd.String,
+							},
+							{
+								Name:     "orderNumber",
+								Optional: true,
+								Type:     smd.Integer,
+							},
+						},
+					},
+				},
+				Returns: smd.JSONSchema{
+					Optional: true,
+					Type:     smd.Object,
+					TypeName: "Category",
+					Properties: smd.PropertyList{
+						{
+							Name: "categoryId",
+							Type: smd.Integer,
+						},
+						{
+							Name: "title",
+							Type: smd.String,
+						},
+					},
+				},
+				Errors: map[int]string{
+					404: "not found",
+				},
+			},
 			"Tags": {
 				Description: `Tags return list tag.`,
 				Parameters:  []smd.JSONSchema{},
@@ -397,6 +552,40 @@ func (NewsService) SMD() smd.ServiceInfo {
 									Type: smd.String,
 								},
 							},
+						},
+					},
+				},
+				Errors: map[int]string{
+					404: "not found",
+				},
+			},
+			"AddTag": {
+				Description: `AddTag return new tag.`,
+				Parameters: []smd.JSONSchema{
+					{
+						Name:     "in",
+						Type:     smd.Object,
+						TypeName: "TagInput",
+						Properties: smd.PropertyList{
+							{
+								Name: "title",
+								Type: smd.String,
+							},
+						},
+					},
+				},
+				Returns: smd.JSONSchema{
+					Optional: true,
+					Type:     smd.Object,
+					TypeName: "Tag",
+					Properties: smd.PropertyList{
+						{
+							Name: "tagID",
+							Type: smd.Integer,
+						},
+						{
+							Name: "title",
+							Type: smd.String,
 						},
 					},
 				},
@@ -471,7 +660,7 @@ func (s NewsService) Invoke(ctx context.Context, method string, params json.RawM
 
 		resp.Set(s.Count(ctx, args.Params))
 
-	case RPC.NewsService.ShortsNews:
+	case RPC.NewsService.NewsSummaries:
 		var args = struct {
 			Params *queryParams `json:"params"`
 		}{}
@@ -490,11 +679,68 @@ func (s NewsService) Invoke(ctx context.Context, method string, params json.RawM
 
 		resp.Set(s.NewsSummaries(ctx, args.Params))
 
+	case RPC.NewsService.AddNews:
+		var args = struct {
+			In NewsInput `json:"in"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"in"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		resp.Set(s.AddNews(ctx, args.In))
+
 	case RPC.NewsService.Categories:
 		resp.Set(s.Categories(ctx))
 
+	case RPC.NewsService.AddCategory:
+		var args = struct {
+			In CategoryInput `json:"in"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"in"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		resp.Set(s.AddCategory(ctx, args.In))
+
 	case RPC.NewsService.Tags:
 		resp.Set(s.Tags(ctx))
+
+	case RPC.NewsService.AddTag:
+		var args = struct {
+			In TagInput `json:"in"`
+		}{}
+
+		if zenrpc.IsArray(params) {
+			if params, err = zenrpc.ConvertToObject([]string{"in"}, params); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &args); err != nil {
+				return zenrpc.NewResponseError(nil, zenrpc.InvalidParams, "", err.Error())
+			}
+		}
+
+		resp.Set(s.AddTag(ctx, args.In))
 
 	default:
 		resp = zenrpc.NewResponseError(nil, zenrpc.MethodNotFound, "", nil)

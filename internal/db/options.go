@@ -17,6 +17,7 @@ const (
 	StatusEnabled  = 1
 	StatusDisabled = 9
 	StatusDeleted  = 3
+	StatusNew      = 12
 )
 
 var (

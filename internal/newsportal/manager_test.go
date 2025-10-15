@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -21,6 +22,12 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
+}
+func strP(s string) *string {
+	return &s
+}
+func intP(i int) *int {
+	return &i
 }
 
 func TestManager_GetAllCategory(t *testing.T) {
@@ -218,6 +225,59 @@ func TestManager_GetNewsCount(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, count, fmt.Sprint("Count() count: ", count))
+		})
+	}
+}
+
+func TestManager_AppNews(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *NewsInput
+	}
+	var timeSave = time.Now()
+	tests := []struct {
+		name    string
+		args    args
+		want    *News
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "test 1 add full 'test 1'",
+			args: args{
+				ctx: context.Background(),
+				in: &NewsInput{
+					Title:      "test 1 title",
+					Content:    nil,
+					Author:     "test 1 author",
+					CategoryID: 1,
+					TagIDs:     []int{3, 2, 5},
+				},
+			},
+			want: &News{
+				News: db.News{
+					Title:       "test 1 title",
+					Content:     nil,
+					Author:      "test 1 author",
+					CategoryID:  1,
+					TagIDs:      []int{3, 2, 5},
+					PublishedAt: timeSave,
+					StatusID:    1,
+					Category:    &db.Category{ID: 1},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Manager{
+				repo: connDB,
+			}
+			got, err := m.AddNews(tt.args.ctx, tt.args.in)
+			if !tt.wantErr(t, err, fmt.Sprintf("AddNews(%v, %v)", tt.args.ctx, tt.args.in)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "AddNews(%v, %v)", tt.args.ctx, tt.args.in)
 		})
 	}
 }

@@ -3,6 +3,7 @@ package newsportal
 import (
 	"News-portal/internal/db"
 	"fmt"
+	"log/slog"
 
 	"golang.org/x/net/context"
 )
@@ -62,12 +63,32 @@ func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
 	return m.repo.CountNews(ctx, fil.filter())
 }
 
+func (m *Manager) AddNews(ctx context.Context, in *NewsInput) (*News, error) {
+	slog.Info("add news", "in", in)
+	res, err := m.repo.AddNews(ctx, newsToDB(in))
+	return NewNews(res), err
+}
+
 /*** Category ***/
 
 func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
 	categories, err := m.repo.CategoriesByFilters(ctx, &db.CategorySearch{}, db.PagerNoLimit)
 
 	return NewCategories(categories), err
+}
+
+func (m *Manager) AddCategory(ctx context.Context, in *CategoryInput) (*Category, error) {
+	if in.OrderNumber == nil {
+		on, err := m.repo.MaxOrderNumber(ctx)
+		if err != nil {
+			return nil, err
+		}
+		on++
+		in.OrderNumber = &on
+	}
+
+	res, err := m.repo.AddCategory(ctx, categoryToDB(in))
+	return NewCategory(res), err
 }
 
 /*** Tag ***/
@@ -88,4 +109,9 @@ func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
 	)
 
 	return NewTags(tags), err
+}
+
+func (m *Manager) AddTag(ctx context.Context, in *TagInput) (*Tag, error) {
+	res, err := m.repo.AddTag(ctx, tagToDB(in))
+	return NewTag(res), err
 }

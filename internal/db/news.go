@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
@@ -100,6 +101,7 @@ func (nr NewsRepo) CountCategories(ctx context.Context, search *CategorySearch, 
 
 // AddCategory adds Category to DB.
 func (nr NewsRepo) AddCategory(ctx context.Context, category *Category, ops ...OpFunc) (*Category, error) {
+	category.StatusID = StatusNew
 	q := nr.db.ModelContext(ctx, category)
 	applyOps(q, ops...)
 	_, err := q.Insert()
@@ -127,6 +129,15 @@ func (nr NewsRepo) DeleteCategory(ctx context.Context, id int) (deleted bool, er
 	category := &Category{ID: id, StatusID: StatusDeleted}
 
 	return nr.UpdateCategory(ctx, category, WithColumns(Columns.Category.StatusID))
+}
+
+// MaxOrderNumber gets the maximum last ordinal number.
+func (nr NewsRepo) MaxOrderNumber(ctx context.Context, ops ...OpFunc) (int, error) {
+	var res int
+	q := nr.db.ModelContext(ctx).ColumnExpr(`MAX("t"."categoryId")`).Limit(1)
+	err := q.Select(res)
+
+	return res, err
 }
 
 /*** News ***/
@@ -173,10 +184,18 @@ func (nr NewsRepo) CountNews(ctx context.Context, search *NewsSearch, ops ...OpF
 
 // AddNews adds News to DB.
 func (nr NewsRepo) AddNews(ctx context.Context, news *News, ops ...OpFunc) (*News, error) {
+	if news.StatusID == 0 {
+		news.StatusID = StatusNew
+	}
+	if news.PublishedAt.IsZero() {
+		news.PublishedAt = time.Now().Add(1 * time.Hour)
+	}
+
 	q := nr.db.ModelContext(ctx, news)
 	if len(ops) == 0 {
 		q = q.ExcludeColumn(Columns.News.CreatedAt)
 	}
+
 	applyOps(q, ops...)
 	_, err := q.Insert()
 
@@ -249,6 +268,7 @@ func (nr NewsRepo) CountTags(ctx context.Context, search *TagSearch, ops ...OpFu
 
 // AddTag adds Tag to DB.
 func (nr NewsRepo) AddTag(ctx context.Context, tag *Tag, ops ...OpFunc) (*Tag, error) {
+	tag.StatusID = StatusNew
 	q := nr.db.ModelContext(ctx, tag)
 	applyOps(q, ops...)
 	_, err := q.Insert()
