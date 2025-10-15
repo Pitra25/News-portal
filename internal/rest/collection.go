@@ -40,6 +40,7 @@ func NewNews(in *newsportal.News) *News {
 		Content:     in.Content,
 		PublishedAt: in.PublishedAt,
 		Category:    NewCategory(in.Category),
+		Tags:        NewTags(in.Tags),
 	}
 }
 
@@ -57,7 +58,7 @@ func NewNewsSummaries(in []newsportal.News) []NewsSummary {
 	if in == nil {
 		return nil
 	}
-	result := make([]NewsSummary, len(in))
+	var result []NewsSummary
 	for _, i := range in {
 		result = append(result, *NewNewsSummary(&i))
 	}

@@ -21,14 +21,7 @@ func NewManager(dbc *db.DB) *Manager {
 
 func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
 	dbNews, err := m.repo.NewsByFilters(
-		ctx,
-		&db.NewsSearch{
-			CategoryID: &fil.CategoryId,
-			IDs:        []int{fil.TagId},
-		}, db.Pager{
-			Page:     fil.Page,
-			PageSize: fil.PageSize,
-		},
+		ctx, fil.filter(), *fil.pager(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
@@ -66,18 +59,14 @@ func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 }
 
 func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
-	return m.repo.CountNews(ctx,
-		&db.NewsSearch{
-			CategoryID: &fil.CategoryId,
-			IDs:        []int{fil.TagId},
-		},
-	)
+	return m.repo.CountNews(ctx, fil.filter())
 }
 
 /*** Category ***/
 
 func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
 	categories, err := m.repo.CategoriesByFilters(ctx, &db.CategorySearch{}, db.PagerNoLimit)
+
 	return NewCategories(categories), err
 }
 
@@ -85,16 +74,18 @@ func (m *Manager) GetAllCategory(ctx context.Context) ([]Category, error) {
 
 func (m *Manager) GetAllTag(ctx context.Context) ([]Tag, error) {
 	tags, err := m.repo.TagsByFilters(ctx, &db.TagSearch{}, db.PagerNoLimit)
+
 	return NewTags(tags), err
 }
 
 func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
+	fil := db.TagSearch{}
+	if len(ids) > 0 {
+		fil.IDs = ids
+	}
 	tags, err := m.repo.TagsByFilters(
-		ctx,
-		&db.TagSearch{
-			IDs: ids,
-		},
-		db.PagerNoLimit,
+		ctx, &fil, db.PagerNoLimit,
 	)
+
 	return NewTags(tags), err
 }

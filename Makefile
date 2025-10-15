@@ -9,3 +9,6 @@ mfd-repo:
 
 mfd-test:
 	mfd-generator dbtest -x News-portal/internal/db -o ./internal/db/test -m ./docs/model/newsportal.mfd
+
+mfd-server:
+	mfd-generator server

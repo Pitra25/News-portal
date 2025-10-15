@@ -1,10 +1,9 @@
 package test
 
 import (
+	"News-portal/internal/db"
 	"testing"
 	"time"
-
-	"News-portal/internal/db"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-pg/pg/v10/orm"

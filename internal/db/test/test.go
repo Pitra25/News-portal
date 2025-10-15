@@ -2,6 +2,7 @@
 package test
 
 import (
+	"News-portal/internal/db"
 	"context"
 	"log"
 	"math/rand"
@@ -9,8 +10,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-
-	"News-portal/internal/db"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -79,7 +78,7 @@ func Setup(t *testing.T) db.DB {
 }
 
 func setup() (*pg.DB, error) {
-	u := env("DB_CONN", "postgresql://localhost:5432/newsportal?sslmode=disable")
+	u := env("DB_CONN", "postgresql://localhost:5432/postgres?sslmode=disable")
 	cfg, err := pg.ParseURL(u)
 	if err != nil {
 		return nil, err

@@ -32,7 +32,6 @@ func NewCategory(in *db.Category) *Category {
 	if in == nil {
 		return nil
 	}
-
 	return &Category{
 		Category: *in,
 	}
@@ -42,7 +41,6 @@ func NewNews(in *db.News) *News {
 	if in == nil {
 		return nil
 	}
-
 	return &News{
 		News:     *in,
 		Category: NewCategory(in.Category),
@@ -53,6 +51,5 @@ func NewTag(in *db.Tag) *Tag {
 	if in == nil {
 		return nil
 	}
-
 	return &Tag{Tag: *in}
 }

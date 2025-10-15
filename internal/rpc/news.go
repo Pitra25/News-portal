@@ -47,10 +47,10 @@ func (ns *NewsService) Count(ctx context.Context, params *queryParams) (int, err
 	return count, nil
 }
 
-// ShortsNews returns news summary by filters.
+// NewsSummaries returns news summary by filters.
 //
 //zenrpc:404 not found
-func (ns *NewsService) ShortsNews(ctx context.Context, params *queryParams) ([]NewsSummary, error) {
+func (ns *NewsService) NewsSummaries(ctx context.Context, params *queryParams) ([]NewsSummary, error) {
 	list, err := ns.m.GetNewsByFilters(ctx, params.NewFilter())
 	if err != nil {
 		return nil, newInternalError(err)

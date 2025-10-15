@@ -21,7 +21,7 @@ func (h *Router) AddRouter(e *echo.Echo) {
 
 	news := api.Group("/news")
 	news.GET("/", h.GetAllNews)
-	news.GET("/short", h.GetAllShortNews)
+	news.GET("/short", h.GetNewsSummaries)
 	news.GET("/:id", h.GetNewsById)
 
 	count := news.Group("/count")

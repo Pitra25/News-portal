@@ -149,7 +149,7 @@ func (nr NewsRepo) NewsByID(ctx context.Context, id int, ops ...OpFunc) (*News, 
 // OneNews is a function that returns one News by filters. It could return pg.ErrMultiRows.
 func (nr NewsRepo) OneNews(ctx context.Context, search *NewsSearch, ops ...OpFunc) (*News, error) {
 	obj := &News{}
-	err := buildQuery(ctx, nr.db, obj, search, nr.filters[Tables.News.Name], PagerTwo, ops...).Select()
+	err := buildQuery(ctx, nr.db, obj, search, nr.filters[Tables.News.Name], PagerTwo, ops...).Relation(Columns.News.Category).Select()
 
 	if errors.Is(err, pg.ErrMultiRows) {
 		return nil, err
@@ -162,13 +162,13 @@ func (nr NewsRepo) OneNews(ctx context.Context, search *NewsSearch, ops ...OpFun
 
 // NewsByFilters returns News list.
 func (nr NewsRepo) NewsByFilters(ctx context.Context, search *NewsSearch, pager Pager, ops ...OpFunc) (newsList []News, err error) {
-	err = buildQuery(ctx, nr.db, &newsList, search, nr.filters[Tables.News.Name], pager, ops...).Select()
+	err = buildQuery(ctx, nr.db, &newsList, search, nr.filters[Tables.News.Name], pager, ops...).Relation(Columns.News.Category).Select()
 	return
 }
 
 // CountNews returns count
 func (nr NewsRepo) CountNews(ctx context.Context, search *NewsSearch, ops ...OpFunc) (int, error) {
-	return buildQuery(ctx, nr.db, &News{}, search, nr.filters[Tables.News.Name], PagerOne, ops...).Count()
+	return buildQuery(ctx, nr.db, &News{}, search, nr.filters[Tables.News.Name], PagerOne, ops...).Relation(Columns.News.Category).Count()
 }
 
 // AddNews adds News to DB.

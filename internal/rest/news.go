@@ -44,7 +44,7 @@ func (h *Router) GetNewsById(c echo.Context) error {
 	return c.JSON(http.StatusOK, NewNews(news))
 }
 
-func (h *Router) GetAllShortNews(c echo.Context) error {
+func (h *Router) GetNewsSummaries(c echo.Context) error {
 	var params queryParams
 	if err := c.Bind(&params); err != nil {
 		return newErrorResponse(c, http.StatusBadRequest, err)

@@ -10,6 +10,8 @@ import (
 	"syscall"
 
 	"github.com/BurntSushi/toml"
+	"github.com/go-pg/pg/extra/pgdebug"
+	"github.com/go-pg/pg/v10"
 )
 
 var conFlag = flag.String("config", "./config/config.toml", "config file path")
@@ -26,19 +28,19 @@ func main() {
 		slog.Error("failed to load config", "err", err)
 	}
 
-	conn, err := db.Connect(&cfg.Database)
-	if err != nil {
-		slog.Error("fail init db", "err", err)
-		return
-	}
+	dbInit := pg.Connect(&cfg.Database)
+	dbInit.AddQueryHook(pgdebug.DebugHook{
+		Verbose: true,
+	})
+	conn := db.New(dbInit)
 
-	application := app.New(cfg, conn)
+	application := app.New(cfg, &conn)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-		if err = application.Run(); err != nil {
+		if err := application.Run(); err != nil {
 			slog.Error("fail run app", "err", err)
 			return
 		}
@@ -47,7 +49,7 @@ func main() {
 
 	<-quit
 
-	if err = application.Shutdown(); err != nil {
+	if err := application.Shutdown(); err != nil {
 		slog.Error("fail shutdown app", "err", err)
 	}
 }

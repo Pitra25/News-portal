@@ -4,6 +4,7 @@ go 1.24.5
 
 require (
 	github.com/brianvoe/gofakeit/v7 v7.8.0
+	github.com/go-pg/pg/extra/pgdebug v0.2.0
 	github.com/go-pg/pg/v10 v10.15.0
 	github.com/go-pg/urlstruct v1.0.1
 	github.com/labstack/echo/v4 v4.13.4

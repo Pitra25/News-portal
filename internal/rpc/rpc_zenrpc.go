@@ -249,8 +249,8 @@ func (NewsService) SMD() smd.ServiceInfo {
 					404: "not found",
 				},
 			},
-			"ShortsNews": {
-				Description: `ShortsNews returns news summary by filters.`,
+			"GetNewsSummaries": {
+				Description: `GetNewsSummaries returns news summary by filters.`,
 				Parameters: []smd.JSONSchema{
 					{
 						Name:     "params",
@@ -488,7 +488,7 @@ func (s NewsService) Invoke(ctx context.Context, method string, params json.RawM
 			}
 		}
 
-		resp.Set(s.ShortsNews(ctx, args.Params))
+		resp.Set(s.NewsSummaries(ctx, args.Params))
 
 	case RPC.NewsService.Categories:
 		resp.Set(s.Categories(ctx))

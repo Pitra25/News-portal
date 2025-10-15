@@ -21,10 +21,9 @@ import (
 
 type (
 	App struct {
-		cfg    *Config
-		db     *db.DB
-		dbInit *pg.DB
-		echo   *echo.Echo
+		cfg  *Config
+		db   *db.DB
+		echo *echo.Echo
 	}
 
 	Config struct {
@@ -39,12 +38,11 @@ type (
 	}
 )
 
-func New(cfg *Config, dbInit *pg.DB) *App {
+func New(cfg *Config, db *db.DB) *App {
 	return &App{
-		cfg:    cfg,
-		db:     db.New(dbInit),
-		dbInit: dbInit,
-		echo:   echo.New(),
+		cfg:  cfg,
+		db:   db,
+		echo: echo.New(),
 	}
 }
 
@@ -89,7 +87,7 @@ func (a *App) Shutdown() error {
 		return fmt.Errorf("fail to shutdown server: %w", err)
 	}
 
-	if err := db.Close(a.dbInit); err != nil {
+	if err := a.db.Close(); err != nil {
 		return fmt.Errorf("fail to close database: %w", err)
 	}
 
