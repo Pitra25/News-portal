@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
@@ -101,7 +100,6 @@ func (nr NewsRepo) CountCategories(ctx context.Context, search *CategorySearch, 
 
 // AddCategory adds Category to DB.
 func (nr NewsRepo) AddCategory(ctx context.Context, category *Category, ops ...OpFunc) (*Category, error) {
-	category.StatusID = StatusNew
 	q := nr.db.ModelContext(ctx, category)
 	applyOps(q, ops...)
 	_, err := q.Insert()
@@ -160,7 +158,7 @@ func (nr NewsRepo) NewsByID(ctx context.Context, id int, ops ...OpFunc) (*News, 
 // OneNews is a function that returns one News by filters. It could return pg.ErrMultiRows.
 func (nr NewsRepo) OneNews(ctx context.Context, search *NewsSearch, ops ...OpFunc) (*News, error) {
 	obj := &News{}
-	err := buildQuery(ctx, nr.db, obj, search, nr.filters[Tables.News.Name], PagerTwo, ops...).Relation(Columns.News.Category).Select()
+	err := buildQuery(ctx, nr.db, obj, search, nr.filters[Tables.News.Name], PagerTwo, ops...).Select()
 
 	if errors.Is(err, pg.ErrMultiRows) {
 		return nil, err
@@ -173,24 +171,17 @@ func (nr NewsRepo) OneNews(ctx context.Context, search *NewsSearch, ops ...OpFun
 
 // NewsByFilters returns News list.
 func (nr NewsRepo) NewsByFilters(ctx context.Context, search *NewsSearch, pager Pager, ops ...OpFunc) (newsList []News, err error) {
-	err = buildQuery(ctx, nr.db, &newsList, search, nr.filters[Tables.News.Name], pager, ops...).Relation(Columns.News.Category).Select()
+	err = buildQuery(ctx, nr.db, &newsList, search, nr.filters[Tables.News.Name], pager, ops...).Select()
 	return
 }
 
 // CountNews returns count
 func (nr NewsRepo) CountNews(ctx context.Context, search *NewsSearch, ops ...OpFunc) (int, error) {
-	return buildQuery(ctx, nr.db, &News{}, search, nr.filters[Tables.News.Name], PagerOne, ops...).Relation(Columns.News.Category).Count()
+	return buildQuery(ctx, nr.db, &News{}, search, nr.filters[Tables.News.Name], PagerOne, ops...).Count()
 }
 
 // AddNews adds News to DB.
 func (nr NewsRepo) AddNews(ctx context.Context, news *News, ops ...OpFunc) (*News, error) {
-	if news.StatusID == 0 {
-		news.StatusID = StatusNew
-	}
-	if news.PublishedAt.IsZero() {
-		news.PublishedAt = time.Now().Add(1 * time.Hour)
-	}
-
 	q := nr.db.ModelContext(ctx, news)
 	if len(ops) == 0 {
 		q = q.ExcludeColumn(Columns.News.CreatedAt)
@@ -268,7 +259,6 @@ func (nr NewsRepo) CountTags(ctx context.Context, search *TagSearch, ops ...OpFu
 
 // AddTag adds Tag to DB.
 func (nr NewsRepo) AddTag(ctx context.Context, tag *Tag, ops ...OpFunc) (*Tag, error) {
-	tag.StatusID = StatusNew
 	q := nr.db.ModelContext(ctx, tag)
 	applyOps(q, ops...)
 	_, err := q.Insert()

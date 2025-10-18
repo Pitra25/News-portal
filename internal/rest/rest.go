@@ -24,6 +24,8 @@ func (h *Router) AddRouter(e *echo.Echo) {
 	news.GET("/short", h.GetNewsSummaries)
 	news.GET("/:id", h.GetNewsById)
 	news.POST("/", h.AddNews)
+	news.PUT("/", h.UpdateNews)
+	news.DELETE("/:id", h.DeleteNews)
 
 	count := news.Group("/count")
 	count.GET("/", h.GetNewsCount)
@@ -31,10 +33,14 @@ func (h *Router) AddRouter(e *echo.Echo) {
 	tags := api.Group("/tags")
 	tags.GET("/", h.GetAllTags)
 	tags.POST("/", h.AddTag)
+	tags.PUT("/", h.UpdateTag)
+	tags.DELETE("/:id", h.DeleteTag)
 
 	categories := api.Group("/categories")
 	categories.GET("/", h.GetAllCategories)
 	categories.POST("/", h.AddCategory)
+	categories.PUT("/", h.UpdateCategory)
+	categories.DELETE("/:id", h.DeleteCategory)
 
 	return
 }

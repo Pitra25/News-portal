@@ -36,7 +36,7 @@ func (h *Router) GetNewsById(c echo.Context) error {
 		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	news, err := h.manager.GetNewsById(c.Request().Context(), newsId)
+	news, err := h.manager.GetNewsByID(c.Request().Context(), newsId)
 	if err != nil {
 		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
@@ -79,7 +79,6 @@ func (h *Router) GetNewsCount(c echo.Context) error {
 
 func (h *Router) AddNews(c echo.Context) error {
 	var newItem *NewsInput
-
 	if err := c.Bind(&newItem); err != nil {
 		return newErrorResponse(c, http.StatusBadRequest, err)
 	}
@@ -89,8 +88,36 @@ func (h *Router) AddNews(c echo.Context) error {
 		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusCreated, res)
+}
 
+func (h *Router) UpdateNews(c echo.Context) error {
+	var input *NewsInput
+	if err := c.Bind(&input); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
+
+	res, err := h.manager.UpdateNews(c.Request().Context(), newsToManager(input))
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return newNoContentResponse(c, http.StatusCreated, res)
+}
+
+func (h *Router) DeleteNews(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	res, err := h.manager.DeleteNews(c.Request().Context(), id)
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return newNoContentResponse(c, http.StatusNoContent, res)
 }
 
 /*** Category ***/
@@ -106,7 +133,6 @@ func (h *Router) GetAllCategories(c echo.Context) error {
 
 func (h *Router) AddCategory(c echo.Context) error {
 	var newItem *CategoryInput
-
 	if err := c.Bind(&newItem); err != nil {
 		return newErrorResponse(c, http.StatusBadRequest, err)
 	}
@@ -116,8 +142,35 @@ func (h *Router) AddCategory(c echo.Context) error {
 		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusCreated, res)
+}
 
+func (h *Router) UpdateCategory(c echo.Context) error {
+	var input *CategoryInput
+	if err := c.Bind(&input); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
+
+	res, err := h.manager.UpdateCategory(c.Request().Context(), categoryToManager(input))
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	return newNoContentResponse(c, http.StatusCreated, res)
+}
+
+func (h *Router) DeleteCategory(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	res, err := h.manager.DeleteNews(c.Request().Context(), id)
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return newNoContentResponse(c, http.StatusNoContent, res)
 }
 
 /*** Tag ***/
@@ -133,7 +186,6 @@ func (h *Router) GetAllTags(c echo.Context) error {
 
 func (h *Router) AddTag(c echo.Context) error {
 	var newItem *TagInput
-
 	if err := c.Bind(&newItem); err != nil {
 		return newErrorResponse(c, http.StatusBadRequest, err)
 	}
@@ -143,6 +195,34 @@ func (h *Router) AddTag(c echo.Context) error {
 		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusCreated, res)
+}
 
+func (h *Router) UpdateTag(c echo.Context) error {
+	var input *TagInput
+	if err := c.Bind(&input); err != nil {
+		return newErrorResponse(c, http.StatusBadRequest, err)
+	}
+
+	res, err := h.manager.UpdateTag(c.Request().Context(), tagToManager(input))
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return newNoContentResponse(c, http.StatusCreated, res)
+}
+
+func (h *Router) DeleteTag(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	res, err := h.manager.DeleteTag(c.Request().Context(), id)
+	if err != nil {
+		return newErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return newNoContentResponse(c, http.StatusNoContent, res)
 }

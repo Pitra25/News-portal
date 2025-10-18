@@ -3,7 +3,6 @@ package newsportal
 import (
 	"News-portal/internal/db"
 	"fmt"
-	"log/slog"
 
 	"golang.org/x/net/context"
 )
@@ -22,7 +21,8 @@ func NewManager(dbc *db.DB) *Manager {
 
 func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
 	dbNews, err := m.repo.NewsByFilters(
-		ctx, fil.filter(), *fil.pager(),
+		ctx, fil.ToDB(), db.Pager{fil.Page, fil.PageSize},
+		db.WithoutColumns(db.Columns.News.Category),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
@@ -41,7 +41,7 @@ func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, er
 	return result, nil
 }
 
-func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
+func (m *Manager) GetNewsByID(ctx context.Context, id int) (*News, error) {
 	// receiving news by ID
 	news, err := m.repo.NewsByID(ctx, id)
 	if err != nil {
@@ -60,13 +60,20 @@ func (m *Manager) GetNewsById(ctx context.Context, id int) (*News, error) {
 }
 
 func (m *Manager) GetNewsCount(ctx context.Context, fil Filters) (int, error) {
-	return m.repo.CountNews(ctx, fil.filter())
+	return m.repo.CountNews(ctx, fil.ToDB())
 }
 
 func (m *Manager) AddNews(ctx context.Context, in *NewsInput) (*News, error) {
-	slog.Info("add news", "in", in)
 	res, err := m.repo.AddNews(ctx, newsToDB(in))
 	return NewNews(res), err
+}
+
+func (m *Manager) UpdateNews(ctx context.Context, in *NewsInput) (bool, error) {
+	return m.repo.UpdateNews(ctx, newsToDB(in))
+}
+
+func (m *Manager) DeleteNews(ctx context.Context, id int) (bool, error) {
+	return m.repo.DeleteNews(ctx, id)
 }
 
 /*** Category ***/
@@ -89,6 +96,14 @@ func (m *Manager) AddCategory(ctx context.Context, in *CategoryInput) (*Category
 
 	res, err := m.repo.AddCategory(ctx, categoryToDB(in))
 	return NewCategory(res), err
+}
+
+func (m *Manager) UpdateCategory(ctx context.Context, in *CategoryInput) (bool, error) {
+	return m.repo.UpdateCategory(ctx, categoryToDB(in))
+}
+
+func (m *Manager) DeleteCategory(ctx context.Context, id int) (bool, error) {
+	return m.repo.DeleteCategory(ctx, id)
 }
 
 /*** Tag ***/
@@ -114,4 +129,12 @@ func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
 func (m *Manager) AddTag(ctx context.Context, in *TagInput) (*Tag, error) {
 	res, err := m.repo.AddTag(ctx, tagToDB(in))
 	return NewTag(res), err
+}
+
+func (m *Manager) UpdateTag(ctx context.Context, in *TagInput) (bool, error) {
+	return m.repo.UpdateTag(ctx, tagToDB(in))
+}
+
+func (m *Manager) DeleteTag(ctx context.Context, id int) (bool, error) {
+	return m.repo.DeleteTag(ctx, id)
 }

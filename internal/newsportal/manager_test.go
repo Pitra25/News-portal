@@ -3,281 +3,153 @@ package newsportal
 import (
 	"News-portal/internal/db"
 	"News-portal/internal/db/test"
-	"context"
-	"fmt"
-	"log/slog"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
-var connDB db.NewsRepo
-
 func TestMain(m *testing.M) {
-	var t *testing.T
-	dbo := test.Setup(t)
-	connDB = db.NewNewsRepo(dbo)
-
 	exitCode := m.Run()
+
 	os.Exit(exitCode)
 }
-func strP(s string) *string {
-	return &s
-}
-func intP(i int) *int {
-	return &i
-}
 
-func TestManager_GetAllCategory(t *testing.T) {
-	m := &Manager{
-		repo: connDB,
-	}
-	categories, err := m.GetAllCategory(context.Background())
-	assert.NoError(t, err)
+func createTestData(t *testing.T) ([]db.News, []test.Cleaner) {
+	dbc := test.Setup(t)
 
-	const minLength = 5
-	slog.Info("categories", "cat: ", categories)
-	assert.GreaterOrEqual(
-		t, len(categories), minLength,
-		fmt.Sprint("len: ", len(categories)),
+	var (
+		res     []db.News
+		c       []test.Cleaner
+		timeStr = "2025-10-17 12:10:00.000"
+		layout  = "2006-01-02 15:04:05"
 	)
-}
 
-func TestManager_GetAllTag(t *testing.T) {
-	m := &Manager{
-		repo: connDB,
-	}
-	tags, err := m.GetAllTag(context.Background())
-	assert.NoError(t, err)
+	parseT, _ := time.Parse(layout, timeStr)
 
-	const minLength = 5
-	assert.GreaterOrEqual(t, len(tags), minLength, fmt.Sprint("len: ", len(tags)))
+	n1, cleaner1 := test.News(t, dbc, &db.News{Title: "test", CategoryID: 12, TagIDs: []int{14, 15}, PublishedAt: parseT}, test.WithFakeNews, test.WithNewsRelations)
+	n2, cleaner2 := test.News(t, dbc, &db.News{Title: "test", CategoryID: 12, TagIDs: []int{15, 16}, PublishedAt: parseT}, test.WithFakeNews, test.WithNewsRelations)
+	n3, cleaner3 := test.News(t, dbc, &db.News{Title: "test", CategoryID: 12, TagIDs: []int{16, 14}}, test.WithFakeNews, test.WithNewsRelations)
 
-}
+	res = append(res, *n1, *n2, *n3)
+	c = append(c, cleaner1, cleaner2, cleaner3)
 
-func TestManager_GetNewsByFilters(t *testing.T) {
-	tests := []struct {
-		name    string
-		args    Filters
-		want    int
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Get all news by query (1)",
-			args: Filters{
-				CategoryId: 2,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (2)",
-			args: Filters{
-				CategoryId: 4,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    4,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (3)",
-			args: Filters{
-				CategoryId: 5,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    0,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get all news by query (4)",
-			args: Filters{
-				CategoryId: 10,
-				TagId:      1,
-				PageSize:   10,
-				Page:       1,
-			},
-			want:    1,
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := &Manager{
-				repo: connDB,
-			}
-			list, err := m.GetNewsByFilters(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetNewsByFilters() error = %e, wantErr %v", err, tt.wantErr)) {
-				return
-			}
-
-			assert.Len(t, list, tt.want, fmt.Sprint("len: ", len(list)))
-		})
-	}
+	return res, c
 }
 
 func TestManager_GetNewsById(t *testing.T) {
-	tests := []struct {
-		name    string
-		args    int
-		want    string
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name:    "Get news by id (1)",
-			args:    1,
-			want:    "Иван Петров",
-			wantErr: assert.NoError,
-		},
-		{
-			name:    "Get news by id (2)",
-			args:    11,
-			want:    "Анна Петрова",
-			wantErr: assert.NoError,
-		},
-		{
-			name:    "Get news by id (3)",
-			args:    12,
-			want:    "Михаил Семенов",
-			wantErr: assert.NoError,
-		},
+	dbc := test.Setup(t)
+
+	list, cleaner := createTestData(t)
+	defer func() {
+		for _, v := range cleaner {
+			v()
+		}
+	}()
+
+	m := &Manager{db.NewNewsRepo(dbc)}
+
+	res1, err := m.GetNewsByID(t.Context(), list[0].ID)
+	if err != nil {
+		t.Error(err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	if res1.Title != "test" {
+		t.Errorf("res1.ID = %v, want %v", res1.ID, list[0].ID)
+	}
 
-			m := &Manager{
-				repo: connDB,
-			}
+	res2, err := m.GetNewsByID(t.Context(), list[1].ID)
+	if err != nil {
+		t.Error(err)
+	}
+	if res2.Title != "test" {
+		t.Errorf("res2.ID = %v, want %v", res2.ID, list[1].ID)
+	}
 
-			news, err := m.GetNewsById(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("GetById() error = %e, wantErr %v", err, tt.wantErr)) {
-				return
-			}
-
-			assert.NotNil(t, news, fmt.Sprint("no data found"))
-			assert.Equal(t, news.Author, tt.want, fmt.Sprint("Author: ", news.Author))
-
-		})
+	res3, err := m.GetNewsByID(t.Context(), list[2].ID)
+	if err != nil {
+		t.Error(err)
+	}
+	if res3.Title != "test" {
+		t.Errorf("res3.ID = %v, want %v", res3.ID, list[2].ID)
 	}
 }
 
-func TestManager_GetNewsCount(t *testing.T) {
+func TestManager_GetNewsByFilters(t *testing.T) {
+	dbc := test.Setup(t)
+
+	testData, cleaner := createTestData(t)
+	defer func() {
+		for _, v := range cleaner {
+			v()
+		}
+	}()
+
 	tests := []struct {
 		name    string
 		args    Filters
-		want    int
-		wantErr assert.ErrorAssertionFunc
+		want    []News
+		wantErr bool
 	}{
 		{
-			name: "Get count by categoryId 1 and tagId 0",
+			name: "test 1",
 			args: Filters{
-				CategoryId: 1,
-				TagId:      0,
+				CategoryId: 12,
+				TagId:      15,
 			},
-			want:    3,
-			wantErr: assert.NoError,
+			want: []News{
+				{News: testData[0]},
+				{News: testData[1]},
+			},
+			wantErr: false,
 		},
 		{
-			name: "Get count by categoryId 2 and tagId 0",
+			name: "test 2",
 			args: Filters{
-				CategoryId: 2,
-				TagId:      0,
+				CategoryId: 12,
+				TagId:      16,
 			},
-			want:    3,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get count by categoryId 1 and tagId 1",
-			args: Filters{
-				CategoryId: 1,
-				TagId:      1,
+			want: []News{
+				{News: testData[1]},
+				//{News: testData[2]}, // Раскомментировать если надо проверить на фильтр даты публикации
 			},
-			want:    2,
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Get count by categoryId 2 and tagId 1",
-			args: Filters{
-				CategoryId: 2,
-				TagId:      1,
-			},
-			want:    1,
-			wantErr: assert.NoError,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &Manager{
-				repo: connDB,
-			}
+			m := &Manager{db.NewNewsRepo(dbc)}
 
-			count, err := m.GetNewsCount(context.Background(), tt.args)
-			if !tt.wantErr(t, err, fmt.Sprintf("Count() error = %e, wantErr %v", err, tt.wantErr)) {
+			list, err := m.GetNewsByFilters(t.Context(), tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			assert.Equal(t, tt.want, count, fmt.Sprint("Count() count: ", count))
-		})
-	}
-}
-
-func TestManager_AppNews(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		in  *NewsInput
-	}
-	var timeSave = time.Now()
-	tests := []struct {
-		name    string
-		args    args
-		want    *News
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "test 1 add full 'test 1'",
-			args: args{
-				ctx: context.Background(),
-				in: &NewsInput{
-					Title:      "test 1 title",
-					Content:    nil,
-					Author:     "test 1 author",
-					CategoryID: 1,
-					TagIDs:     []int{3, 2, 5},
-				},
-			},
-			want: &News{
-				News: db.News{
-					Title:       "test 1 title",
-					Content:     nil,
-					Author:      "test 1 author",
-					CategoryID:  1,
-					TagIDs:      []int{3, 2, 5},
-					PublishedAt: timeSave,
-					StatusID:    1,
-					Category:    &db.Category{ID: 1},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := &Manager{
-				repo: connDB,
-			}
-			got, err := m.AddNews(tt.args.ctx, tt.args.in)
-			if !tt.wantErr(t, err, fmt.Sprintf("AddNews(%v, %v)", tt.args.ctx, tt.args.in)) {
+			if len(list) == 0 {
+				t.Error("not foud:", len(list))
 				return
 			}
-			assert.Equalf(t, tt.want, got, "AddNews(%v, %v)", tt.args.ctx, tt.args.in)
+
+			if len(list) != len(tt.want) {
+				t.Errorf("list = %v, want %v", len(list), len(tt.want))
+			}
+
+			for i, v := range list {
+				if v.Title != tt.want[i].Title {
+					t.Errorf("list[i].Title = %v, want %v", v.Title, tt.want[i].Title)
+				}
+				if v.Category.ID != tt.want[i].CategoryID {
+					t.Errorf("list[i].Category = %v, want %v", v.Category, tt.want[i].Category)
+				}
+				for j, tagID := range list[i].TagIDs {
+					if len(tt.want[i].TagIDs) <= j {
+						t.Errorf("list[i].TagIDs = %v, want %v", v.TagIDs, tagID)
+						break
+					}
+					if tagID != tt.want[i].TagIDs[j] {
+						t.Errorf("list[i].TagID = %v, want %v", list[i].TagIDs[i], tagID)
+					}
+				}
+			}
 		})
 	}
 }

@@ -42,6 +42,7 @@ type (
 	}
 
 	NewsInput struct {
+		Id          *int    `json:"newsID"`
 		Title       string  `json:"title"`
 		Content     *string `json:"content"`
 		Author      string  `json:"author"`
@@ -51,10 +52,12 @@ type (
 	}
 
 	TagInput struct {
+		ID    *int   `json:"tagID"`
 		Title string `json:"title"`
 	}
 
 	CategoryInput struct {
+		ID          *int   `json:"categoryID"`
 		Title       string `json:"title"`
 		OrderNumber *int   `json:"orderNumber"`
 	}
@@ -67,11 +70,20 @@ func (q *queryParams) NewFilter() newsportal.Filters {
 	)
 }
 
+func newNoContentResponse(res bool, err error) error {
+	if res {
+		return nil
+	} else {
+		return err
+	}
+}
+
 func newsToManager(in *NewsInput) *newsportal.NewsInput {
 	layout := "2006-01-02 15:04:05.000 -0700"
 	timeP, _ := time.Parse(layout, in.PublishedAt)
 
 	return &newsportal.NewsInput{
+		Id:          in.Id,
 		Title:       in.Title,
 		Content:     in.Content,
 		Author:      in.Author,
@@ -83,6 +95,7 @@ func newsToManager(in *NewsInput) *newsportal.NewsInput {
 
 func categoryToManager(in *CategoryInput) *newsportal.CategoryInput {
 	return &newsportal.CategoryInput{
+		ID:          in.ID,
 		Title:       in.Title,
 		OrderNumber: in.OrderNumber,
 	}
@@ -90,6 +103,7 @@ func categoryToManager(in *CategoryInput) *newsportal.CategoryInput {
 
 func tagToManager(in *TagInput) *newsportal.TagInput {
 	return &newsportal.TagInput{
+		ID:    in.ID,
 		Title: in.Title,
 	}
 }

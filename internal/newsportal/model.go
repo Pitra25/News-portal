@@ -13,11 +13,21 @@ type (
 		Page       int
 	}
 
+	UpdateStatus struct {
+		NewsId     *int
+		CategoryId *int
+		TagId      *int
+	}
+
 	Tag      struct{ db.Tag }
-	TagInput struct{ Title string }
+	TagInput struct {
+		ID    *int
+		Title string
+	}
 
 	Category      struct{ db.Category }
 	CategoryInput struct {
+		ID          *int
 		Title       string
 		OrderNumber *int
 	}
@@ -29,6 +39,7 @@ type (
 	}
 
 	NewsInput struct {
+		Id          *int
 		Title       string
 		Content     *string
 		Author      string
@@ -38,7 +49,7 @@ type (
 	}
 )
 
-func (f *Filters) filter() *db.NewsSearch {
+func (f *Filters) ToDB() *db.NewsSearch {
 	filter := db.NewsSearch{}
 	if f.TagId != 0 {
 		filter.IDs = []int{f.TagId}
@@ -70,7 +81,7 @@ func NewFilters(categoryId, tagId, pageSize, page int) Filters {
 }
 
 func newsToDB(in *NewsInput) *db.News {
-	return &db.News{
+	result := &db.News{
 		Title:       in.Title,
 		Content:     in.Content,
 		Author:      in.Author,
@@ -78,17 +89,32 @@ func newsToDB(in *NewsInput) *db.News {
 		TagIDs:      in.TagIDs,
 		PublishedAt: *in.PublishedAt,
 	}
+	if in.Id != nil {
+		result.ID = *in.Id
+	}
+
+	return result
 }
 
 func categoryToDB(in *CategoryInput) *db.Category {
-	return &db.Category{
+	result := &db.Category{
 		Title:       in.Title,
 		OrderNumber: in.OrderNumber,
 	}
+	if in.ID != nil {
+		result.ID = *in.ID
+	}
+
+	return result
 }
 
 func tagToDB(in *TagInput) *db.Tag {
-	return &db.Tag{
+	result := &db.Tag{
 		Title: in.Title,
 	}
+	if in.ID != nil {
+		result.ID = *in.ID
+	}
+
+	return result
 }
