@@ -27,14 +27,14 @@ type (
 	}
 
 	Config struct {
-		Server struct {
+		Database pg.Options
+		Server   struct {
 			Host            string
 			Port            string
 			ReadTimeout     time.Duration
 			WriteTimeout    time.Duration
 			ShutdownTimeout time.Duration
 		}
-		Database pg.Options
 	}
 )
 

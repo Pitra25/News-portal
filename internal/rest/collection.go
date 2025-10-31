@@ -4,20 +4,11 @@ import (
 	"News-portal/internal/newsportal"
 )
 
-//go:generate colgen -imports=News-portal/internal/newsportal
+//go:generate colgen -imports=News-portal/internal/newsportal -funcpkg=newsportal
 //colgen:News,Category,Tag
 //colgen:News:MapP(newsportal)
 //colgen:Tag:MapP(newsportal)
 //colgen:Category:MapP(newsportal)
-
-// MapP converts slice of type T to slice of type M with given converter with pointers.
-func MapP[T, M any](a []T, f func(*T) *M) []M {
-	n := make([]M, len(a))
-	for i := range a {
-		n[i] = *f(&a[i])
-	}
-	return n
-}
 
 func NewCategory(in *newsportal.Category) *Category {
 	if in == nil {
@@ -58,7 +49,7 @@ func NewNewsSummaries(in []newsportal.News) []NewsSummary {
 	if in == nil {
 		return nil
 	}
-	var result []NewsSummary
+	var result = make([]NewsSummary, len(in), len(in))
 	for _, i := range in {
 		result = append(result, *NewNewsSummary(&i))
 	}

@@ -31,6 +31,7 @@ func NewNews(in *newsportal.News) *News {
 		Content:     in.Content,
 		PublishedAt: in.PublishedAt,
 		Category:    NewCategory(in.Category),
+		Tags:        NewTags(in.Tags),
 	}
 }
 
@@ -53,6 +54,6 @@ func NewNewsSummary(in *newsportal.News) *NewsSummary {
 		Title:       in.Title,
 		PublishedAt: in.PublishedAt,
 		Category:    NewCategory(in.Category),
-		TagIds:      NewTags(in.Tags),
+		Tags:        NewTags(in.Tags),
 	}
 }

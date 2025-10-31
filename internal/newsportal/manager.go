@@ -21,8 +21,8 @@ func NewManager(dbc *db.DB) *Manager {
 
 func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, error) {
 	dbNews, err := m.repo.NewsByFilters(
-		ctx, fil.ToDB(), db.Pager{fil.Page, fil.PageSize},
-		db.WithoutColumns(db.Columns.News.Category),
+		ctx, fil.ToDB(), db.Pager{Page: fil.Page, PageSize: fil.PageSize},
+		db.WithColumns(db.Columns.News.Category),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("news fetch failed: %w", err)
@@ -30,7 +30,7 @@ func (m *Manager) GetNewsByFilters(ctx context.Context, fil Filters) ([]News, er
 	result := NewNewsList(dbNews)
 
 	// collect everything in 1 news
-	tags, err := m.GetTagsByID(ctx, result.UniqueTagIDs())
+	tags, err := m.GetTagsByFilters(ctx, Filters{TagIds: result.UniqueTagIDs()})
 	if err != nil {
 		return nil, fmt.Errorf("tags fetch failed: %w", err)
 	}
@@ -49,7 +49,7 @@ func (m *Manager) GetNewsByID(ctx context.Context, id int) (*News, error) {
 	}
 	result := NewNews(news)
 
-	tags, err := m.GetTagsByID(ctx, result.TagIDs)
+	tags, err := m.GetTagsByFilters(ctx, Filters{TagIds: result.TagIDs})
 	if err != nil {
 		return nil, fmt.Errorf("tags fetch failed: %w", err)
 	}
@@ -108,19 +108,13 @@ func (m *Manager) DeleteCategory(ctx context.Context, id int) (bool, error) {
 
 /*** Tag ***/
 
-func (m *Manager) GetAllTag(ctx context.Context) ([]Tag, error) {
-	tags, err := m.repo.TagsByFilters(ctx, &db.TagSearch{}, db.PagerNoLimit)
-
-	return NewTags(tags), err
-}
-
-func (m *Manager) GetTagsByID(ctx context.Context, ids []int) (Tags, error) {
-	fil := db.TagSearch{}
-	if len(ids) > 0 {
-		fil.IDs = ids
+func (m *Manager) GetTagsByFilters(ctx context.Context, fil Filters) (Tags, error) {
+	search := db.TagSearch{}
+	if len(fil.TagIds) > 0 {
+		search.IDs = fil.TagIds
 	}
 	tags, err := m.repo.TagsByFilters(
-		ctx, &fil, db.PagerNoLimit,
+		ctx, &search, db.PagerNoLimit,
 	)
 
 	return NewTags(tags), err

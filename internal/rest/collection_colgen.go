@@ -23,7 +23,7 @@ func (ll Categories) Index() map[int]Category {
 	return r
 }
 
-func NewCategories(in []newsportal.Category) Categories { return MapP(in, NewCategory) }
+func NewCategories(in []newsportal.Category) Categories { return newsportal.MapP(in, NewCategory) }
 
 type NewsList []News
 
@@ -43,7 +43,7 @@ func (ll NewsList) Index() map[int]News {
 	return r
 }
 
-func NewNewsList(in []newsportal.News) NewsList { return MapP(in, NewNews) }
+func NewNewsList(in []newsportal.News) NewsList { return newsportal.MapP(in, NewNews) }
 
 type Tags []Tag
 
@@ -63,4 +63,4 @@ func (ll Tags) Index() map[int]Tag {
 	return r
 }
 
-func NewTags(in []newsportal.Tag) Tags { return MapP(in, NewTag) }
+func NewTags(in []newsportal.Tag) Tags { return newsportal.MapP(in, NewTag) }

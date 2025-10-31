@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"News-portal/internal/newsportal"
 	"context"
 	"errors"
 )
@@ -170,7 +171,7 @@ func (ns *NewsService) DeleteCategory(ctx context.Context, id int) error {
 //zenrpc:200 ok
 //zenrpc:404 not found
 func (ns *NewsService) Tags(ctx context.Context) ([]Tag, error) {
-	list, err := ns.m.GetAllTag(ctx)
+	list, err := ns.m.GetTagsByFilters(ctx, newsportal.Filters{})
 	if err != nil {
 		return nil, newInternalError(err)
 	} else if list == nil {

@@ -38,7 +38,7 @@ type (
 		Title       string    `json:"title"`
 		PublishedAt time.Time `json:"publishedAt"`
 		Category    *Category `json:"category"`
-		TagIds      []Tag     `json:"tagIds"`
+		Tags        []Tag     `json:"tags"`
 	}
 
 	NewsInput struct {

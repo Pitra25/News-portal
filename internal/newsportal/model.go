@@ -9,6 +9,7 @@ type (
 	Filters struct {
 		CategoryId int
 		TagId      int
+		TagIds     []int
 		PageSize   int
 		Page       int
 	}
@@ -50,7 +51,12 @@ type (
 )
 
 func (f *Filters) ToDB() *db.NewsSearch {
-	filter := db.NewsSearch{}
+	//statusID := db.StatusEnabled
+	//timeNow := time.Now()
+	filter := db.NewsSearch{
+		//StatusIDEQuals: &statusID,
+		//PublishedAtLE:  &timeNow,
+	}
 	if f.TagId != 0 {
 		filter.IDs = []int{f.TagId}
 	}

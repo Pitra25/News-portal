@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"News-portal/internal/newsportal"
 	"errors"
 	"net/http"
 	"strconv"
@@ -176,7 +177,7 @@ func (h *Router) DeleteCategory(c echo.Context) error {
 /*** Tag ***/
 
 func (h *Router) GetAllTags(c echo.Context) error {
-	tags, err := h.manager.GetAllTag(c.Request().Context())
+	tags, err := h.manager.GetTagsByFilters(c.Request().Context(), newsportal.Filters{})
 	if err != nil {
 		return newErrorResponse(c, http.StatusInternalServerError, err)
 	}
