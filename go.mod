@@ -27,6 +27,7 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/smartystreets/goconvey v1.8.1 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
@@ -36,7 +37,10 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/vmkteam/meta-schema/v2 v2.0.1 // indirect
 	github.com/vmkteam/zenrpc v1.1.1 // indirect
+	golang.org/x/mod v0.27.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
+	golang.org/x/tools v0.36.0 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 )
 
@@ -50,8 +54,8 @@ require (
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	golang.org/x/crypto v0.40.0 // indirect
-	golang.org/x/net v0.42.0
+	golang.org/x/crypto v0.41.0 // indirect
+	golang.org/x/net v0.43.0
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
